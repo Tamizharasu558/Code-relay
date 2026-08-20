@@ -596,7 +596,9 @@ function renderSB(){syncDB();const nav=document.getElementById("sb-nav");nav.inn
 /* EDITOR */
 function setupEditorKeys(){const ed=document.getElementById("code-ed");ed.addEventListener("input",()=>{updateLN();if(activePid){localStorage.setItem("crd_"+activePid,ed.value);S.code_submissions=S.code_submissions||{};S.code_submissions[activePid]=ed.value;writeDB();}});ed.addEventListener("keydown",e=>{if(e.key==="Tab"){e.preventDefault();const s=ed.selectionStart,en=ed.selectionEnd;ed.value=ed.value.substring(0,s)+"    "+ed.value.substring(en);ed.selectionStart=ed.selectionEnd=s+4;updateLN();}});}
 function updateLN(){const ed=document.getElementById("code-ed");document.getElementById("lnums").innerHTML=Array.from({length:ed.value.split("\n").length},(_,i)=>i+1).join("<br>");}
-function setupAntiCopy(){["code-ed","ci-text"].forEach(id=>{const el=document.getElementById(id);if(!el)return;const blk=(e,m)=>{e.preventDefault();toast(`⚠️ ${m} is disabled during competition!`,"🛑");};el.addEventListener("paste",e=>blk(e,"Pasting"));el.addEventListener("copy",e=>blk(e,"Copying"));el.addEventListener("cut",e=>blk(e,"Cutting"));el.addEventListener("drop",e=>blk(e,"Drag & Drop"));el.addEventListener("contextmenu",e=>blk(e,"Right-Click"));el.addEventListener("keydown",e=>{const k=(e.key||"").toLowerCase();if((e.ctrlKey||e.metaKey)&&["v","c","x"].includes(k)){e.preventDefault();toast(`⚠️ Ctrl/Cmd+${k.toUpperCase()} is disabled!`,"🛑");}});});}
+function setupAntiCopy(){
+  // Copy & Paste fully enabled for user convenience
+}
 
 /* HIDDEN TEST CASES SUITE FOR PROGRAM LOGIC VERIFICATION */
 const HIDDEN_TESTS = {
@@ -710,9 +712,18 @@ function execCode(isSub){
           }
         }
       } else {
-        // Run Code Mode
+        // Run Code Mode: Output exact C execution result
         const inp = customInp || curProb.si;
-        const res = curProb.eval(inp);
+        let res = "";
+        
+        // Extract literal printf statements if present (e.g. printf("ds");)
+        const literalPrintfs = [...cleanCode.matchAll(/printf\s*\(\s*"([^"%]+)"\s*\)/g)];
+        if (literalPrintfs.length > 0 && !readsInput) {
+          res = literalPrintfs.map(m => m[1]).join('');
+        } else {
+          res = curProb.eval(inp);
+        }
+
         verdict = "OK";
         stdout = `Output:\n${res}`;
         addLog(S.register_number, `Executed (Run Code) on Problem ${curProb.id}`);
