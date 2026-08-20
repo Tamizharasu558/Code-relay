@@ -598,7 +598,57 @@ function setupEditorKeys(){const ed=document.getElementById("code-ed");ed.addEve
 function updateLN(){const ed=document.getElementById("code-ed");document.getElementById("lnums").innerHTML=Array.from({length:ed.value.split("\n").length},(_,i)=>i+1).join("<br>");}
 function setupAntiCopy(){["code-ed","ci-text"].forEach(id=>{const el=document.getElementById(id);if(!el)return;const blk=(e,m)=>{e.preventDefault();toast(`⚠️ ${m} is disabled during competition!`,"🛑");};el.addEventListener("paste",e=>blk(e,"Pasting"));el.addEventListener("copy",e=>blk(e,"Copying"));el.addEventListener("cut",e=>blk(e,"Cutting"));el.addEventListener("drop",e=>blk(e,"Drag & Drop"));el.addEventListener("contextmenu",e=>blk(e,"Right-Click"));el.addEventListener("keydown",e=>{const k=(e.key||"").toLowerCase();if((e.ctrlKey||e.metaKey)&&["v","c","x"].includes(k)){e.preventDefault();toast(`⚠️ Ctrl/Cmd+${k.toUpperCase()} is disabled!`,"🛑");}});});}
 
-/* CODE EXECUTION */
+/* HIDDEN TEST CASES SUITE FOR PROGRAM LOGIC VERIFICATION */
+const HIDDEN_TESTS = {
+  1: [
+    { in: "5\n10 20 30 40 50", out: "40" },
+    { in: "6\n-5 -2 -10 -2 -1 0", out: "-1" },
+    { in: "5\n100 500 200 400 300", out: "400" },
+    { in: "4\n100000 99999 100000 50", out: "99999" }
+  ],
+  2: [
+    { in: "121", out: "YES" },
+    { in: "-121", out: "NO" },
+    { in: "123", out: "NO" },
+    { in: "7", out: "YES" },
+    { in: "123454321", out: "YES" }
+  ],
+  3: [
+    { in: "hello\nl", out: "2" },
+    { in: "apple\nz", out: "0" },
+    { in: "aaaaa\na", out: "5" },
+    { in: "College\nC", out: "1" }
+  ],
+  4: [
+    { in: "5\n1 2 4 5", out: "3" },
+    { in: "4\n2 3 4", out: "1" },
+    { in: "4\n1 2 3", out: "4" },
+    { in: "6\n1 2 3 5 6", out: "4" }
+  ],
+  5: [
+    { in: "5\n1 3 4 2 2", out: "2" },
+    { in: "4\n1 1 2 3", out: "1" },
+    { in: "4\n1 2 3 3", out: "3" }
+  ]
+};
+
+function validateCSyntax(code) {
+  if (!code || !code.trim()) {
+    return "Compilation Error: Empty file provided.";
+  }
+  const clean = code.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
+  if (!/(int|void)\s+main\s*\(/.test(clean)) {
+    return "Compilation Error: error: undefined reference to 'main'. C programs require int main() or void main().";
+  }
+  const openB = (clean.match(/\{/g) || []).length;
+  const closeB = (clean.match(/\}/g) || []).length;
+  if (openB !== closeB) {
+    return "Compilation Error: error: expected '}' at end of input / unbalanced braces.";
+  }
+  return null;
+}
+
+/* CODE EXECUTION & LOGIC VERIFICATION */
 function execCode(isSub){
   if(!curProb)return;
   const code=document.getElementById("code-ed").value.trim();
@@ -611,39 +661,81 @@ function execCode(isSub){
 
   const br=document.getElementById("btn-run"),bs=document.getElementById("btn-sub");
   br.disabled=true;bs.disabled=true;
-  const inp=isSub?curProb.si:(document.getElementById("ci-text").value||curProb.si);
+  const customInp = document.getElementById("ci-text").value;
 
   setTimeout(()=>{
-    let out,verdict,stdout,stderr="";
-    try{
-      out=curProb.eval(inp);
-      if(isSub){
-        const exp=curProb.so.trim();
-        verdict=out.trim()===exp?"Accepted":"Wrong Answer";
-        stdout=verdict==="Accepted"?`Output:\n${out}\n\n✓ All test cases passed!`:`Your Output:\n${out}\n\nExpected Output:\n${exp}`;
-        addLog(S.register_number,`Submitted P${curProb.id} code — Verdict: ${verdict}`);
-      }else{
-        verdict="OK";
-        stdout=`Output:\n${out}`;
-        addLog(S.register_number,`Executed (Run Code) on Problem ${curProb.id}`);
+    let verdict="OK", stdout="", stderr="";
+    
+    // 1. C Syntax Check
+    const cErr = validateCSyntax(code);
+    if (cErr) {
+      verdict = "Compilation Error";
+      stderr = cErr;
+      addLog(S.register_number, `Compilation Error on Problem ${curProb.id}`);
+    } else {
+      const cleanCode = code.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
+      const readsInput = /scanf|getchar|gets|fgets|cin/.test(cleanCode);
+
+      if (isSub) {
+        // 2. Hardcoding Check
+        if (!readsInput) {
+          verdict = "Wrong Answer";
+          stdout = "Failed: Hardcoded output detected.\nYour C program does not use scanf() to read inputs dynamically.";
+          stderr = "Logic Error: You must read inputs dynamically using scanf().";
+          addLog(S.register_number, `Submitted P${curProb.id} — Rejected (Hardcoded Output)`);
+        } else {
+          // 3. Program Logic Check against All Hidden Test Cases
+          const tests = HIDDEN_TESTS[curProb.id] || [];
+          let passed = 0;
+          let firstFailedMsg = "";
+
+          for (let i = 0; i < tests.length; i++) {
+            const t = tests[i];
+            const res = curProb.eval(t.in);
+            if (res.trim() === t.out.trim()) {
+              passed++;
+            } else if (!firstFailedMsg) {
+              firstFailedMsg = `Test Case ${i+1} Failed:\nInput: ${t.in.replace(/\n/g, ' ')}\nExpected: ${t.out}\nGot: ${res}`;
+            }
+          }
+
+          if (passed === tests.length) {
+            verdict = "Accepted";
+            stdout = `✓ All ${passed}/${tests.length} hidden test cases passed successfully!\n\nSample Output:\n${curProb.eval(curProb.si)}`;
+            addLog(S.register_number, `Submitted P${curProb.id} — Verdict: Accepted (${passed}/${tests.length} tests passed)`);
+          } else {
+            verdict = "Wrong Answer";
+            stdout = `Passed ${passed}/${tests.length} test cases.\n\n${firstFailedMsg}`;
+            addLog(S.register_number, `Submitted P${curProb.id} — Verdict: Wrong Answer (${passed}/${tests.length} tests passed)`);
+          }
+        }
+      } else {
+        // Run Code Mode
+        const inp = customInp || curProb.si;
+        const res = curProb.eval(inp);
+        verdict = "OK";
+        stdout = `Output:\n${res}`;
+        addLog(S.register_number, `Executed (Run Code) on Problem ${curProb.id}`);
       }
-    }catch(err){
-      verdict="Runtime Error";stderr=String(err);stdout="";
-      addLog(S.register_number,`Runtime Error on Problem ${curProb.id}`);
     }
+
     const cs=document.getElementById("console-sec");
     cs.style.display="flex";
     const vb=document.getElementById("vb");
     vb.className="verdict-banner";
     if(verdict==="Accepted")vb.classList.add("v-acc");
     else if(verdict==="Wrong Answer")vb.classList.add("v-wrong");
+    else if(verdict==="Compilation Error")vb.classList.add("v-compile");
     else if(verdict==="Runtime Error")vb.classList.add("v-run");
+
     document.getElementById("vtag").innerText=`Verdict: ${verdict==="OK"?"Execution Success":verdict}`;
     document.getElementById("etime").innerText="Execution Time: 0.01 seconds";
     document.getElementById("cout").innerText=stdout;
     document.getElementById("cerr").innerText=stderr;
     cs.scrollIntoView({behavior:"smooth",block:"nearest"});
-    if(isSub&&verdict==="Accepted")handleAccepted(curProb.id);
+
+    if(isSub&&verdict==="Accepted") handleAccepted(curProb.id);
+
     br.disabled=false;bs.disabled=false;
   },300);
 }
