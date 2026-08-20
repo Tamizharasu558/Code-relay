@@ -238,6 +238,9 @@ body{background:var(--bg-main);color:var(--text-main);font-family:var(--font-san
         <div class="fg"><label>Password</label><div class="iw"><span class="ii">🔒</span><input type="text" id="l-pwd" class="pwd-mask" placeholder="Enter your password" autocomplete="off" required><button type="button" class="pwd-btn" id="ptl-l">👁️</button></div></div>
         <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-login"><span class="bt">Login to Dashboard</span><span class="bs" style="display:none;">⌛ Logging in...</span></button>
       </form>
+      <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px dashed var(--border-color);display:flex;flex-direction:column;gap:.5rem;">
+        <button type="button" class="btn btn-secondary btn-sm btn-block" id="btn-quick-stu" style="background:rgba(56,189,248,.12);border-color:var(--accent-blue);color:var(--accent-blue);font-weight:700;">⚡ 1-Click Demo Student Entry</button>
+      </div>
       <div class="auth-foot"><span>New Student?</span><button type="button" class="lbtn" id="go-reg">Register Here</button></div>
     </div>
     <!-- Admin Login -->
@@ -250,6 +253,9 @@ body{background:var(--bg-main);color:var(--text-main);font-family:var(--font-san
         <div class="fg"><label>Admin Password</label><div class="iw"><span class="ii">🔒</span><input type="password" id="a-pass" placeholder="Enter admin password" autocomplete="off" required><button type="button" class="pwd-btn" id="ptl-a">👁️</button></div></div>
         <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-admin" style="background:var(--accent-purple);border-color:var(--accent-purple);margin-top:.75rem;"><span class="bt">🛡️ Access Admin Portal</span><span class="bs" style="display:none;">⌛ Verifying...</span></button>
       </form>
+      <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px dashed var(--border-color);display:flex;flex-direction:column;gap:.5rem;">
+        <button type="button" class="btn btn-secondary btn-sm btn-block" id="btn-quick-adm" style="background:rgba(139,92,246,.15);border-color:var(--accent-purple);color:var(--accent-purple);font-weight:700;">🛡️ 1-Click Demo Admin Entry</button>
+      </div>
     </div>
     <!-- Registration -->
     <div class="auth-card" id="reg-box" style="display:none;">
@@ -546,6 +552,57 @@ function setupAuth(){
   document.getElementById("btn-adm-logout").onclick=doAdmLogout;
   document.getElementById("btn-adm-refresh").onclick=renderAdm;
   document.getElementById("btn-close-audit").onclick=()=>document.getElementById("audit-modal").style.display="none";
+
+  const qstu = document.getElementById("btn-quick-stu");
+  if (qstu) {
+    qstu.onclick = () => {
+      const reg = "DEMO101", pwd = "1234";
+      const db = gDB();
+      if (!db[reg]) {
+        db[reg] = {
+          register_number: reg,
+          full_name: "Tamizharasu (Demo)",
+          password: pwd,
+          state: {
+            competition_status: "NOT_STARTED",
+            current_problem_id: 1,
+            completed_problems: [],
+            problem_times: {},
+            current_round: 1,
+            round_status: "ROUND 1 IN PROGRESS",
+            tab_switch_count: 0,
+            is_suspended: false,
+            start_time: null,
+            remaining_seconds: 5400,
+            activity_log: [{ time: new Date().toLocaleTimeString(), event: "Quick Demo Student Created" }]
+          }
+        };
+        sDB(db);
+      }
+      sessionStorage.setItem(CUK, reg);
+      syncDB();
+      toast("⚡ Logged in as Demo Student!", "👋");
+      if (S.competition_status === "IN_PROGRESS") {
+        showView("ws");
+        renderHdr();
+        startTimer();
+        loadProb(parseInt(localStorage.getItem(PK)) || S.current_problem_id || 1);
+        if (S.is_suspended) showSuspModal();
+      } else {
+        showView("dash");
+        renderDash();
+      }
+    };
+  }
+
+  const qadm = document.getElementById("btn-quick-adm");
+  if (qadm) {
+    qadm.onclick = () => {
+      localStorage.setItem(ATK, "ADM");
+      toast("🛡️ Welcome, Admin!", "🛡️");
+      showView("admin");
+    };
+  }
 }
 function doLogin(e){
   e.preventDefault();hideErrs();
