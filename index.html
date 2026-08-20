@@ -4,364 +4,245 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CODE RELAY - College Coding Competition & Admin Control Portal</title>
+    <meta name="description" content="CODE RELAY - A live college coding competition platform with sequential problem unlocking, real-time admin monitoring, and anti-cheat protection.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #070a12;
-            --bg-card: #0f172a;
-            --bg-card-hover: #1e293b;
-            --border-color: #1e293b;
-            --border-glow: #38bdf8;
-            --text-primary: #f8fafc;
-            --text-secondary: #cbd5e1;
-            --text-muted: #64748b;
-            --accent-blue: #38bdf8;
-            --accent-blue-bg: rgba(56, 189, 248, 0.12);
-            --accent-green: #10b981;
-            --accent-green-bg: rgba(16, 185, 129, 0.12);
-            --accent-purple: #8b5cf6;
-            --accent-purple-bg: rgba(139, 92, 246, 0.12);
-            --accent-amber: #f59e0b;
-            --accent-rose: #f43f5e;
-            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-            --font-mono: 'Fira Code', monospace;
-        }
+/* ============================================================
+   COMPLETE STYLES - styles.css MERGED
+   ============================================================ */
+:root {
+    --bg-main: #0b0f19;
+    --bg-header: #111827;
+    --bg-card: #1f2937;
+    --bg-card-hover: #374151;
+    --bg-editor: #111827;
+    --bg-code: #0f172a;
+    --border-color: #374151;
+    --border-subtle: #2d3748;
+    --border-glow: #38bdf8;
+    --text-main: #f9fafb;
+    --text-secondary: #e2e8f0;
+    --text-muted: #9ca3af;
+    --text-dim: #6b7280;
+    --accent-blue: #38bdf8;
+    --accent-blue-bg: rgba(56,189,248,0.1);
+    --accent-green: #10b981;
+    --accent-green-bg: rgba(16,185,129,0.12);
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+    --accent-rose-bg: rgba(244,63,94,0.12);
+    --accent-purple: #8b5cf6;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Fira Code', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.password-masked { -webkit-text-security: disc !important; text-security: disc !important; }
+body { background-color: var(--bg-main); color: var(--text-main); font-family: var(--font-sans); line-height: 1.5; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
-            font-family: var(--font-sans);
-            line-height: 1.5;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
+/* Toast */
+.toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 3000; animation: slideInRight 0.35s ease; }
+.global-toast { background: linear-gradient(135deg, rgba(16,185,129,0.95), rgba(16,185,129,0.8)); color: #fff; padding: 0.85rem 1.4rem; border-radius: 0.6rem; box-shadow: 0 10px 25px rgba(16,185,129,0.4); display: flex; align-items: center; gap: 0.75rem; font-weight: 600; font-size: 0.95rem; }
+@keyframes slideInRight { from { opacity:0; transform:translateX(50px); } to { opacity:1; transform:translateX(0); } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes bounce { from { transform:translateY(0); } to { transform:translateY(-10px); } }
+@keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(1.15); } }
 
-        /* Toast Container */
-        .toast-container {
-            position: fixed;
-            top: 1.5rem;
-            right: 1.5rem;
-            z-index: 10000;
-        }
-        .global-toast {
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid var(--accent-blue);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.2);
-            backdrop-filter: blur(12px);
-            border-radius: 0.75rem;
-            padding: 0.85rem 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 0.9rem;
-            animation: slideDown 0.3s ease-out;
-        }
+/* Auth */
+.auth-wrapper { min-height:100vh; display:flex; justify-content:center; align-items:center; background: radial-gradient(circle at top right, rgba(56,189,248,0.12), transparent 40%), radial-gradient(circle at bottom left, rgba(139,92,246,0.12), transparent 40%), var(--bg-main); padding: 2rem 1rem; }
+.auth-container { width:100%; max-width:480px; display:flex; flex-direction:column; gap:1.25rem; }
+.auth-brand { text-align:center; display:flex; flex-direction:column; align-items:center; gap:0.35rem; }
+.auth-logo { display:flex; align-items:center; gap:0.6rem; font-weight:800; font-size:2.25rem; letter-spacing:-0.03em; color:#fff; }
+.auth-logo .logo-icon { font-size:2.5rem; color:var(--accent-blue); filter:drop-shadow(0 0 12px rgba(56,189,248,0.6)); }
+.auth-subtitle { color:var(--accent-blue); font-size:0.95rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; }
+.auth-role-tabs { display:flex; gap:0.5rem; background:rgba(15,23,42,0.6); border:1px solid var(--border-color); padding:0.35rem; border-radius:0.75rem; margin-bottom:1.5rem; width:100%; }
+.role-tab { flex:1; display:flex; align-items:center; justify-content:center; gap:0.5rem; padding:0.75rem 1rem; border:none; background:transparent; color:var(--text-muted); font-size:0.95rem; font-weight:600; border-radius:0.5rem; cursor:pointer; transition:all 0.2s ease; }
+.role-tab:hover { color:#fff; background:rgba(255,255,255,0.05); }
+.role-tab.active { background:var(--accent-blue); color:#fff; font-weight:700; box-shadow:0 4px 12px rgba(56,189,248,0.3); }
+.role-tab.active.admin-active { background:var(--accent-purple); box-shadow:0 4px 12px rgba(139,92,246,0.3); }
+.auth-card { background-color:var(--bg-card); border:1px solid var(--border-color); box-shadow:0 20px 40px rgba(0,0,0,0.5),0 0 1px var(--border-glow); border-radius:1rem; padding:2.25rem; display:flex; flex-direction:column; gap:1.25rem; animation:fadeIn 0.3s ease; }
+.auth-card-title { font-size:1.5rem; font-weight:800; color:#fff; }
+.auth-card-desc { font-size:0.88rem; color:var(--text-muted); margin-top:-0.75rem; }
+.auth-error-banner { background-color:var(--accent-rose-bg); border:1px solid var(--accent-rose); border-radius:0.5rem; padding:0.65rem 0.85rem; font-size:0.85rem; color:#fecdd3; display:flex; align-items:center; gap:0.5rem; font-weight:500; }
+.form-group { display:flex; flex-direction:column; gap:0.4rem; margin-bottom:1rem; }
+.form-group label { font-size:0.85rem; font-weight:600; color:#e2e8f0; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.input-icon-wrapper { position:relative; display:flex; align-items:center; }
+.input-icon { position:absolute; left:0.85rem; font-size:1rem; pointer-events:none; opacity:0.7; }
+.input-icon-wrapper input { width:100%; background-color:var(--bg-code); border:1px solid var(--border-color); border-radius:0.5rem; padding:0.7rem 0.85rem 0.7rem 2.6rem; font-family:var(--font-sans); font-size:0.9rem; color:#fff; outline:none; transition:all 0.2s ease; }
+.input-icon-wrapper input:focus { border-color:var(--accent-blue); box-shadow:0 0 10px rgba(56,189,248,0.25); background-color:#131c2e; }
+.btn-toggle-pwd { position:absolute; right:0.75rem; background:none; border:none; cursor:pointer; font-size:1rem; opacity:0.7; transition:opacity 0.2s ease; padding:0.2rem; }
+.btn-toggle-pwd:hover { opacity:1; }
+.btn-block { width:100%; justify-content:center; margin-top:0.5rem; }
+.auth-footer-link { display:flex; justify-content:center; align-items:center; gap:0.5rem; font-size:0.88rem; color:var(--text-muted); border-top:1px solid var(--border-color); padding-top:1rem; margin-top:0.5rem; }
+.link-btn { background:none; border:none; color:var(--accent-blue); font-weight:700; cursor:pointer; font-size:0.88rem; }
+.link-btn:hover { text-decoration:underline; }
 
-        /* Auth View Layout */
-        .auth-wrapper {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1rem;
-            background: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.08) 0%, transparent 60%);
-        }
-        .auth-container {
-            width: 100%;
-            max-width: 440px;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-        .auth-brand { text-align: center; }
-        .auth-logo {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.75rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            color: #ffffff;
-        }
-        .logo-icon { font-size: 2rem; color: var(--accent-blue); filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5)); }
-        .auth-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+/* Admin Dashboard */
+.admin-wrapper { min-height:100vh; background-color:var(--bg-main); display:flex; flex-direction:column; }
+.admin-header { border-bottom:1px solid rgba(139,92,246,0.3); background-color:#0f1422; }
+.admin-container { padding:2rem 2.5rem; max-width:1400px; margin:0 auto; width:100%; display:flex; flex-direction:column; gap:2rem; }
+.admin-stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.stat-card { background-color:var(--bg-card); border:1px solid var(--border-color); border-radius:0.85rem; padding:1.25rem 1.5rem; display:flex; align-items:center; gap:1.25rem; box-shadow:0 10px 25px rgba(0,0,0,0.2); }
+.stat-icon { font-size:2.25rem; }
+.stat-info { display:flex; flex-direction:column; }
+.stat-value { font-size:1.85rem; font-weight:800; color:#fff; }
+.stat-label { font-size:0.825rem; color:var(--text-muted); font-weight:500; }
+.admin-panel { background-color:var(--bg-card); border:1px solid var(--border-color); border-radius:1rem; padding:1.75rem; display:flex; flex-direction:column; gap:1.25rem; }
+.admin-panel-header h2 { font-size:1.25rem; font-weight:800; color:#fff; }
+.panel-subtitle { font-size:0.85rem; color:var(--text-muted); }
+.table-wrapper { overflow-x:auto; }
+.admin-table { width:100%; border-collapse:collapse; margin-top:0.5rem; font-size:0.88rem; }
+.admin-table th { background-color:var(--bg-header); color:var(--accent-blue); font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em; padding:0.85rem 1rem; text-align:left; border-bottom:1px solid var(--border-color); }
+.admin-table td { padding:0.85rem 1rem; border-bottom:1px solid var(--border-color); color:#e2e8f0; }
+.admin-table tr:hover { background-color:rgba(56,189,248,0.04); }
+.audit-log-container { background-color:var(--bg-code); border:1px solid var(--border-color); border-radius:0.5rem; padding:0.75rem 1rem; max-height:260px; overflow-y:auto; font-family:var(--font-mono); font-size:0.825rem; display:flex; flex-direction:column; gap:0.5rem; }
 
-        /* Role Switcher Tabs */
-        .auth-role-tabs {
-            display: flex;
-            gap: 0.5rem;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border-color);
-            padding: 0.35rem;
-            border-radius: 0.75rem;
-            width: 100%;
-        }
-        .role-tab {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1rem;
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            font-weight: 600;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .role-tab:hover { color: #ffffff; background: rgba(255, 255, 255, 0.05); }
-        .role-tab.active { background: var(--accent-blue); color: #ffffff; font-weight: 700; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); }
-        .role-tab.active.admin-active { background: var(--accent-purple); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
+/* Student Dashboard */
+.dashboard-wrapper { min-height:100vh; padding:2.5rem 2rem; background:radial-gradient(circle at top, rgba(56,189,248,0.08), transparent 50%), var(--bg-main); display:flex; justify-content:center; }
+.dashboard-container { width:100%; max-width:950px; display:flex; flex-direction:column; gap:2rem; }
+.dash-header { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid var(--border-color); padding-bottom:1.5rem; }
+.welcome-tag { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent-blue); }
+.welcome-title { font-size:2.25rem; font-weight:800; color:#fff; }
+.welcome-subtitle { color:var(--text-muted); font-size:0.95rem; }
+.dash-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+.dash-card { background-color:var(--bg-card); border:1px solid var(--border-color); border-radius:0.85rem; padding:1.5rem; display:flex; flex-direction:column; gap:1rem; box-shadow:0 10px 25px rgba(0,0,0,0.3); }
+.dash-card-header { display:flex; align-items:center; gap:0.6rem; border-bottom:1px solid var(--border-color); padding-bottom:0.75rem; }
+.dash-card-icon { font-size:1.35rem; }
+.dash-card-header h3 { font-size:1.1rem; font-weight:700; color:#fff; }
+.dash-card-body { display:flex; flex-direction:column; gap:0.85rem; }
+.info-row { display:flex; justify-content:space-between; align-items:center; font-size:0.9rem; }
+.info-label { color:var(--text-muted); }
+.info-value { font-weight:600; color:#fff; }
+.info-value.highlight { font-family:var(--font-mono); color:var(--accent-blue); background-color:var(--accent-blue-bg); padding:0.15rem 0.5rem; border-radius:0.25rem; }
+.status-badge { background-color:var(--accent-green-bg); color:var(--accent-green); border:1px solid rgba(16,185,129,0.3); padding:0.2rem 0.65rem; border-radius:9999px; font-size:0.8rem; font-weight:700; }
+.status-locked { background-color:var(--accent-rose-bg) !important; color:var(--accent-rose) !important; border-color:rgba(244,63,94,0.3) !important; }
+.status-unlocked { color:var(--accent-blue); }
+.status-completed { color:var(--accent-green); }
+.dash-action-card { background:linear-gradient(135deg,rgba(30,41,59,0.9),rgba(15,23,42,0.9)); border:1px solid var(--border-glow); box-shadow:0 0 30px rgba(56,189,248,0.15); border-radius:1rem; padding:2rem 2.5rem; display:flex; justify-content:space-between; align-items:center; gap:2rem; }
+.action-info h2 { font-size:1.35rem; font-weight:800; color:#fff; }
+.action-info p { color:var(--text-muted); font-size:0.9rem; margin-top:0.35rem; max-width:550px; }
+.btn-cta-xl { padding:0.9rem 2.25rem; font-size:1.1rem; font-weight:800; border-radius:0.75rem; box-shadow:0 0 20px rgba(56,189,248,0.4); white-space:nowrap; }
+.btn-cta-xl:hover { transform:scale(1.04); }
 
-        /* Auth Card */
-        .auth-card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 1rem;
-            padding: 2rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-        }
-        .auth-card-title { font-size: 1.35rem; font-weight: 700; color: #ffffff; }
-        .auth-card-desc { font-size: 0.875rem; color: var(--text-muted); }
-
-        .auth-error-banner {
-            background-color: rgba(244, 63, 94, 0.12);
-            border: 1px solid rgba(244, 63, 94, 0.3);
-            border-radius: 0.5rem;
-            padding: 0.75rem 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--accent-rose);
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        form { display: flex; flex-direction: column; gap: 1.1rem; }
-        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-        .form-group label { font-size: 0.825rem; font-weight: 600; color: var(--text-secondary); }
-        .input-icon-wrapper { position: relative; display: flex; align-items: center; }
-        .input-icon { position: absolute; left: 0.85rem; color: var(--text-muted); pointer-events: none; font-size: 1rem; }
-        
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            background-color: var(--bg-dark);
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
-            padding: 0.75rem 1rem 0.75rem 2.5rem;
-            color: #ffffff;
-            font-family: var(--font-sans);
-            font-size: 0.9rem;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-        input[type="text"]:focus, input[type="password"]:focus {
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-        }
-        .password-masked { -webkit-text-security: disc; text-security: disc; }
-
-        .btn-toggle-pwd {
-            position: absolute;
-            right: 0.75rem;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 1.1rem;
-            padding: 0.25rem;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.25rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            border-radius: 0.5rem;
-            border: 1px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .btn-primary { background-color: var(--accent-blue); color: #000000; font-weight: 700; }
-        .btn-primary:hover { background-color: #7dd3fc; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
-        .btn-secondary { background-color: var(--bg-card-hover); color: var(--text-primary); border-color: var(--border-color); }
-        .btn-secondary:hover { background-color: #334155; }
-        .btn-danger-outline { background: transparent; color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.4); }
-        .btn-danger-outline:hover { background: rgba(244, 63, 94, 0.1); }
-        .btn-block { width: 100%; }
-        .btn-lg { padding: 0.85rem 1.5rem; font-size: 0.95rem; }
-        .btn-sm { padding: 0.4rem 0.85rem; font-size: 0.8rem; }
-        .btn-xs { padding: 0.25rem 0.6rem; font-size: 0.75rem; border-radius: 0.35rem; }
-
-        .auth-footer-link { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
-        .link-btn { background: none; border: none; color: var(--accent-blue); font-weight: 600; cursor: pointer; text-decoration: underline; margin-left: 0.25rem; }
-
-        /* Dashboard Layout */
-        .dashboard-wrapper { min-height: 100vh; padding: 2rem 1.5rem; max-width: 1100px; margin: 0 auto; width: 100%; }
-        .dashboard-container { display: flex; flex-direction: column; gap: 2rem; }
-        .dash-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; }
-        .welcome-tag { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-blue); }
-        .welcome-title { font-size: 2rem; font-weight: 800; color: #ffffff; }
-        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .dash-card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.85rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-        .dash-card-header { display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; }
-        .dash-card-header h3 { font-size: 1.1rem; font-weight: 700; color: #ffffff; }
-        .dash-card-body { display: flex; flex-direction: column; gap: 0.85rem; }
-        .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
-        .info-label { color: var(--text-muted); }
-        .info-value { font-weight: 600; color: #ffffff; }
-        .info-value.highlight { font-family: var(--font-mono); color: var(--accent-blue); background-color: var(--accent-blue-bg); padding: 0.15rem 0.5rem; border-radius: 0.25rem; }
-
-        .status-badge { background-color: var(--accent-green-bg); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.2rem 0.65rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 700; }
-        .status-locked { background-color: rgba(244, 63, 94, 0.12); color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.3); }
-        .status-unlocked { background-color: var(--accent-blue-bg); color: var(--accent-blue); border-color: rgba(56, 189, 248, 0.3); }
-        .status-completed { background-color: var(--accent-green-bg); color: var(--accent-green); border-color: rgba(16, 185, 129, 0.3); }
-
-        .dash-action-card {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
-            border: 1px solid var(--border-glow);
-            box-shadow: 0 0 30px rgba(56, 189, 248, 0.15);
-            border-radius: 1rem;
-            padding: 2rem 2.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 2rem;
-        }
-        .action-info h2 { font-size: 1.35rem; font-weight: 800; color: #ffffff; }
-        .action-info p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.35rem; }
-
-        /* Workspace & Navigation Layout */
-        .app-header { height: 60px; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; }
-        .header-brand { display: flex; align-items: center; gap: 1rem; }
-        .header-status { display: flex; align-items: center; gap: 1rem; }
-        .system-badge { font-size: 0.75rem; font-weight: 700; font-family: var(--font-mono); background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); padding: 0.2rem 0.5rem; border-radius: 0.35rem; }
-
-        .status-chip { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border-radius: 9999px; font-size: 0.825rem; font-weight: 600; }
-        .round-chip { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.3); }
-        .timer-chip { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-glow); font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; }
-        .chip-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-purple); box-shadow: 0 0 8px var(--accent-purple); }
-
-        .app-container { flex: 1; display: flex; height: calc(100vh - 60px); overflow: hidden; }
-        .sidebar { width: 280px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 1.25rem 1rem 0.75rem 1rem; border-bottom: 1px solid var(--border-color); }
-        .sidebar-title { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); }
-        .sidebar-subtitle { font-size: 0.75rem; color: var(--text-muted); }
-        .sidebar-content { flex: 1; overflow-y: auto; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
-
-        .nav-item {
-            padding: 0.85rem 1rem;
-            border-radius: 0.6rem;
-            border: 1px solid transparent;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .nav-item:hover { background-color: var(--bg-card-hover); }
-        .nav-item.active { background-color: var(--accent-blue-bg); border-color: rgba(56, 189, 248, 0.4); }
-        .nav-item.locked { opacity: 0.5; cursor: not-allowed; }
-        .nav-item.completed { border-color: rgba(16, 185, 129, 0.3); }
-
-        .workspace { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 1.5rem; gap: 1.5rem; background: var(--bg-dark); }
-        .problem-container { display: flex; flex-direction: column; gap: 1.5rem; max-width: 1000px; margin: 0 auto; width: 100%; }
-
-        .problem-header-bar { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; }
-        .problem-num-badge { font-size: 0.75rem; font-weight: 700; font-family: var(--font-mono); color: var(--accent-blue); text-transform: uppercase; }
-        .problem-title { font-size: 1.75rem; font-weight: 800; color: #ffffff; }
-        .difficulty-badge { font-size: 0.75rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 0.25rem; text-transform: uppercase; margin-left: 0.5rem; }
-        .difficulty-badge.easy { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
-        .difficulty-badge.medium { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
-
-        .statement-section { display: flex; flex-direction: column; gap: 0.5rem; }
-        .section-heading { font-size: 0.95rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 0.04em; }
-        .statement-text { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; }
-        .statement-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .format-box, .code-box, .sample-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.85rem 1rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary); }
-
-        .samples-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .sample-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
-        .btn-copy { background: none; border: none; color: var(--accent-blue); cursor: pointer; font-size: 0.75rem; font-weight: 600; }
-
-        /* Code Editor */
-        .editor-section { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.85rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
-        .editor-header { display: flex; justify-content: space-between; align-items: center; }
-        .editor-title { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 0.9rem; color: #ffffff; }
-        .editor-lang-icon { background: var(--accent-blue); color: #000; font-weight: 800; width: 22px; height: 22px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; }
-        .compiler-badge { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); }
-
-        .editor-wrapper { display: flex; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 0.5rem; min-height: 220px; overflow: hidden; }
-        .line-numbers { padding: 0.85rem 0.5rem; background: rgba(15, 23, 42, 0.5); border-right: 1px solid var(--border-color); color: var(--text-muted); font-family: var(--font-mono); font-size: 0.85rem; text-align: right; user-select: none; min-width: 35px; }
-        .code-textarea { flex: 1; background: transparent; border: none; padding: 0.85rem 1rem; color: #f8fafc; font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.5; resize: vertical; outline: none; white-space: pre; }
-
-        .editor-actions { display: flex; justify-content: flex-end; gap: 0.85rem; margin-top: 0.5rem; }
-
-        /* Console Output Section */
-        .console-section { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.85rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
-        .verdict-banner { padding: 0.75rem 1rem; border-radius: 0.5rem; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; }
-        .verdict-accepted { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--accent-green); }
-        .verdict-wrong { background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.4); color: var(--accent-rose); }
-        .verdict-compile { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--accent-amber); }
-        .console-output { background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary); max-height: 200px; overflow-y: auto; white-space: pre-wrap; }
-        .stderr-text { color: var(--accent-rose); margin-top: 0.5rem; }
-
-        /* Admin Dashboard View */
-        .admin-wrapper { min-height: 100vh; width: 100%; display: flex; flex-direction: column; background: var(--bg-dark); }
-        .admin-container { padding: 2rem; max-width: 1400px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 2rem; }
-        .admin-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        .stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.85rem; padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem; }
-        .stat-icon { font-size: 2.25rem; }
-        .stat-value { font-size: 2rem; font-weight: 800; color: #ffffff; font-family: var(--font-mono); }
-        .stat-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
-
-        .admin-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
-        .admin-panel-header h2 { font-size: 1.25rem; font-weight: 800; color: #ffffff; }
-        .panel-subtitle { font-size: 0.85rem; color: var(--text-muted); }
-
-        .table-wrapper { overflow-x: auto; }
-        .admin-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
-        .admin-table th { background: rgba(15, 23, 42, 0.8); color: var(--text-muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-color); }
-        .admin-table td { padding: 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); }
-        .admin-table tr:hover { background: rgba(30, 41, 59, 0.5); }
-
-        /* Modals */
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(5, 8, 15, 0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
-        .modal-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 1rem; padding: 2rem; max-width: 500px; width: 100%; display: flex; flex-direction: column; gap: 1.5rem; text-align: center; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6); }
-        .modal-title { font-size: 1.4rem; font-weight: 800; color: #ffffff; }
-        .modal-message { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; }
-        .modal-footer { display: flex; justify-content: center; gap: 1rem; }
-        .btn-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+/* Workspace */
+.app-header { background-color:var(--bg-header); border-bottom:1px solid var(--border-color); padding:0.75rem 1.5rem; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; }
+.header-brand { display:flex; align-items:center; gap:1rem; }
+.brand-logo { display:flex; align-items:center; gap:0.5rem; font-weight:700; font-size:1.25rem; color:#fff; }
+.logo-icon { font-size:1.4rem; color:var(--accent-blue); filter:drop-shadow(0 0 8px rgba(56,189,248,0.5)); }
+.system-badge { background:linear-gradient(135deg,rgba(56,189,248,0.2),rgba(139,92,246,0.2)); border:1px solid rgba(56,189,248,0.3); color:var(--accent-blue); font-size:0.75rem; padding:0.2rem 0.6rem; border-radius:9999px; font-weight:500; }
+.header-status { display:flex; align-items:center; gap:0.85rem; }
+.status-chip { background-color:var(--bg-card); border:1px solid var(--border-color); padding:0.35rem 0.85rem; border-radius:0.5rem; font-size:0.85rem; font-weight:600; display:flex; align-items:center; gap:0.5rem; }
+.chip-dot { width:8px; height:8px; border-radius:50%; }
+.dot-active { background-color:var(--accent-blue); box-shadow:0 0 8px var(--accent-blue); animation:pulse 2s infinite; }
+.timer-chip { color:#e2e8f0; font-family:var(--font-mono); }
+.app-container { display:flex; flex:1; min-height:calc(100vh - 61px); }
+.sidebar { width:320px; background-color:var(--bg-header); border-right:1px solid var(--border-color); display:flex; flex-direction:column; flex-shrink:0; }
+.sidebar-header { padding:1.25rem 1.25rem 0.75rem 1.25rem; border-bottom:1px solid var(--border-color); }
+.sidebar-title { font-size:1rem; font-weight:700; color:#fff; }
+.sidebar-subtitle { font-size:0.75rem; color:var(--text-muted); }
+.sidebar-content { padding:1rem 0.75rem; overflow-y:auto; display:flex; flex-direction:column; gap:1.25rem; }
+.sidebar-round-group { display:flex; flex-direction:column; gap:0.5rem; }
+.round-header-banner { font-size:0.75rem; font-weight:700; letter-spacing:0.05em; color:var(--accent-blue); text-transform:uppercase; padding:0.35rem 0.6rem; background-color:rgba(56,189,248,0.08); border-left:3px solid var(--accent-blue); border-radius:0 0.25rem 0.25rem 0; display:flex; justify-content:space-between; align-items:center; }
+.round-unlocked-badge { color:var(--accent-green); font-size:0.7rem; }
+.sidebar-problem-item { background-color:var(--bg-card); border:1px solid var(--border-color); border-radius:0.5rem; padding:0.75rem 0.85rem; display:flex; align-items:flex-start; gap:0.75rem; cursor:pointer; transition:all 0.2s ease; user-select:none; }
+.sidebar-problem-item:hover:not(.locked) { background-color:var(--bg-card-hover); border-color:var(--accent-blue); transform:translateX(2px); }
+.sidebar-problem-item.active { border-color:var(--accent-blue); background-color:rgba(56,189,248,0.12); box-shadow:0 0 12px rgba(56,189,248,0.15); }
+.sidebar-problem-item.completed { border-color:rgba(16,185,129,0.4); background-color:rgba(16,185,129,0.06); }
+.sidebar-problem-item.locked { opacity:0.55; cursor:not-allowed; background-color:rgba(17,24,39,0.6); }
+.item-status-icon { font-size:1.1rem; margin-top:2px; }
+.item-details { display:flex; flex-direction:column; flex:1; }
+.item-title { font-weight:600; font-size:0.9rem; color:var(--text-main); }
+.item-status-label { font-size:0.75rem; font-weight:500; margin-top:2px; }
+.workspace { flex:1; padding:1.5rem 2rem; overflow-y:auto; max-width:1200px; margin:0 auto; width:100%; }
+.security-banner { background-color:var(--accent-rose-bg); border:1px solid var(--accent-rose); border-radius:0.75rem; padding:1.25rem; display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; animation:fadeIn 0.3s ease; }
+.security-banner .alert-icon { font-size:2rem; }
+.security-banner .alert-title { color:var(--accent-rose); font-weight:700; font-size:1.1rem; }
+.security-banner .alert-message { color:#fecdd3; font-size:0.9rem; }
+.problem-container { display:flex; flex-direction:column; gap:1.5rem; }
+.problem-header-bar { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:1px solid var(--border-color); padding-bottom:1rem; }
+.problem-num-badge { font-size:0.75rem; font-weight:700; letter-spacing:0.05em; color:var(--accent-blue); text-transform:uppercase; }
+.problem-title { font-size:1.85rem; font-weight:800; color:#fff; margin-top:0.1rem; }
+.difficulty-badge { display:inline-block; padding:0.2rem 0.6rem; border-radius:0.25rem; font-size:0.75rem; font-weight:600; margin-top:0.35rem; }
+.difficulty-badge.easy { background:rgba(16,185,129,0.2); color:var(--accent-green); border:1px solid rgba(16,185,129,0.4); }
+.difficulty-badge.medium { background:rgba(245,158,11,0.2); color:var(--accent-amber); border:1px solid rgba(245,158,11,0.4); }
+.difficulty-badge.hard { background:rgba(244,63,94,0.2); color:var(--accent-rose); border:1px solid rgba(244,63,94,0.4); }
+.problem-statement { display:flex; flex-direction:column; gap:1.25rem; background-color:var(--bg-card); border:1px solid var(--border-color); border-radius:0.75rem; padding:1.5rem; }
+.statement-section { display:flex; flex-direction:column; gap:0.5rem; }
+.section-heading { font-size:0.95rem; font-weight:700; color:var(--accent-blue); text-transform:uppercase; letter-spacing:0.03em; }
+.statement-text { color:#e2e8f0; font-size:0.95rem; white-space:pre-line; }
+.statement-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+.format-box { background-color:var(--bg-code); border:1px solid var(--border-color); border-radius:0.5rem; padding:0.75rem 1rem; font-size:0.9rem; color:#cbd5e1; }
+.code-box,.sample-box { font-family:var(--font-mono); background-color:var(--bg-code); border:1px solid var(--border-color); border-radius:0.5rem; padding:0.75rem 1rem; font-size:0.88rem; color:#e2e8f0; overflow-x:auto; }
+.samples-container { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+.sample-block { display:flex; flex-direction:column; gap:0.4rem; }
+.sample-header { display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; font-weight:600; color:var(--text-muted); }
+.btn-copy { background:none; border:none; color:var(--accent-blue); cursor:pointer; font-size:0.75rem; font-weight:600; }
+.editor-section { background-color:var(--bg-card); border:1px solid var(--border-color); border-radius:0.75rem; padding:1.25rem; display:flex; flex-direction:column; gap:1rem; }
+.editor-header { display:flex; justify-content:space-between; align-items:center; }
+.editor-title { display:flex; align-items:center; gap:0.6rem; font-weight:700; font-size:0.95rem; color:#fff; }
+.editor-lang-icon { background-color:var(--accent-blue); color:#000; font-weight:800; padding:0.1rem 0.4rem; border-radius:0.25rem; font-size:0.75rem; }
+.compiler-badge { font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono); }
+.editor-wrapper { display:flex; background-color:var(--bg-editor); border:1px solid var(--border-color); border-radius:0.5rem; overflow:hidden; min-height:280px; }
+.line-numbers { padding:0.75rem 0.5rem; background-color:#0b0f19; border-right:1px solid var(--border-color); color:var(--text-dim); font-family:var(--font-mono); font-size:0.85rem; text-align:right; user-select:none; min-width:40px; line-height:1.5; }
+.code-textarea { flex:1; background:transparent; border:none; color:#f8fafc; font-family:var(--font-mono); font-size:0.88rem; padding:0.75rem 1rem; line-height:1.5; resize:vertical; outline:none; tab-size:4; }
+.custom-input-container textarea { width:100%; background-color:var(--bg-code); border:1px solid var(--border-color); border-radius:0.5rem; color:#fff; font-family:var(--font-mono); font-size:0.85rem; padding:0.6rem; min-height:70px; outline:none; }
+.editor-actions { display:flex; justify-content:flex-end; gap:0.85rem; }
+.btn { display:inline-flex; align-items:center; gap:0.5rem; padding:0.6rem 1.25rem; border-radius:0.5rem; font-weight:600; font-size:0.9rem; cursor:pointer; border:1px solid transparent; transition:all 0.2s ease; }
+.btn-primary { background-color:var(--accent-blue); color:#090d16; }
+.btn-primary:hover { background-color:#7dd3fc; box-shadow:0 0 12px rgba(56,189,248,0.4); }
+.btn-secondary { background-color:#374151; color:#fff; border-color:var(--border-color); }
+.btn-secondary:hover { background-color:#4b5563; }
+.btn-danger-outline { background-color:transparent; border-color:rgba(244,63,94,0.4); color:var(--accent-rose); }
+.btn-danger-outline:hover { background-color:var(--accent-rose-bg); }
+.btn-sm { padding:0.35rem 0.75rem; font-size:0.8rem; }
+.btn-xs { padding:0.2rem 0.5rem; font-size:0.75rem; }
+.btn-lg { padding:0.75rem 1.75rem; font-size:1rem; }
+.console-section { background-color:var(--bg-card); border:1px solid var(--border-color); border-radius:0.75rem; padding:1.25rem; display:flex; flex-direction:column; gap:1rem; animation:fadeIn 0.3s ease; }
+.verdict-banner { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.25rem; border-radius:0.5rem; background-color:var(--bg-code); border:1px solid var(--border-color); }
+.verdict-banner.verdict-accepted { background-color:var(--accent-green-bg); border-color:var(--accent-green); }
+.verdict-banner.verdict-wrong { background-color:var(--accent-rose-bg); border-color:var(--accent-rose); }
+.verdict-banner.verdict-compile { background-color:rgba(245,158,11,0.12); border-color:var(--accent-amber); }
+.verdict-banner.verdict-runtime { background-color:rgba(139,92,246,0.12); border-color:var(--accent-purple); }
+.verdict-tag { font-weight:800; font-size:1.1rem; }
+.exec-time { font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); }
+.unlock-toast { background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(56,189,248,0.15)); border:1px solid var(--accent-green); border-radius:0.5rem; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; animation:slideDown 0.4s cubic-bezier(0.16,1,0.3,1); }
+.toast-icon { font-size:1.5rem; }
+.toast-content { font-weight:700; font-size:0.95rem; color:#fff; white-space:pre-line; }
+.console-output pre { background-color:var(--bg-code); border:1px solid var(--border-color); border-radius:0.5rem; padding:0.75rem 1rem; font-family:var(--font-mono); font-size:0.85rem; color:#e2e8f0; white-space:pre-wrap; max-height:250px; overflow-y:auto; }
+.stderr-text { color:var(--accent-rose) !important; margin-top:0.5rem; }
+.modal-backdrop { position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.75); backdrop-filter:blur(4px); display:flex; justify-content:center; align-items:center; z-index:1000; animation:fadeIn 0.25s ease; }
+.modal-card { background-color:var(--bg-card); border:1px solid var(--border-glow); box-shadow:0 0 25px rgba(56,189,248,0.2); border-radius:1rem; padding:2rem; max-width:500px; width:90%; text-align:center; display:flex; flex-direction:column; gap:1.25rem; }
+.leaderboard-card { max-width:700px; text-align:left; }
+.modal-header { display:flex; flex-direction:column; align-items:center; gap:0.5rem; }
+.trophy-bounce { font-size:3.5rem; animation:bounce 1s infinite alternate; }
+.modal-title { font-size:1.5rem; font-weight:800; color:#fff; }
+.modal-body { display:flex; flex-direction:column; gap:0.5rem; }
+.modal-message { color:#cbd5e1; font-size:1rem; line-height:1.6; }
+.modal-footer { display:flex; justify-content:center; gap:1rem; }
+.btn-close { background:none; border:none; color:var(--text-muted); font-size:1.75rem; cursor:pointer; }
+.maxview-card { border-color:var(--accent-blue); max-width:540px; box-shadow:0 0 30px rgba(56,189,248,0.25); }
+.maxview-icon { font-size:3.5rem; color:var(--accent-blue); filter:drop-shadow(0 0 12px rgba(56,189,248,0.4)); }
+.maxview-footer { display:flex; gap:1rem; justify-content:center; }
+.blocked-card { border-color:var(--accent-rose); box-shadow:0 0 40px rgba(244,63,94,0.35); }
+.blocked-icon { font-size:3.5rem; animation:pulse 1.5s infinite; }
+.maxview-blocked-backdrop { z-index:2000; background-color:rgba(5,8,15,0.94); backdrop-filter:blur(8px); }
     </style>
 </head>
 <body>
 
-    <!-- Toast Notification -->
+    <!-- Global Toast Notification -->
     <div class="toast-container" id="global-toast-container" style="display: none;">
         <div class="global-toast" id="global-toast">
             <span class="toast-icon" id="global-toast-icon">✨</span>
-            <span class="toast-message" id="global-toast-msg">Welcome to Code Relay Platform.</span>
+            <span class="toast-message" id="global-toast-msg">Welcome to Code Relay.</span>
         </div>
     </div>
 
     <!-- =================================================== -->
-    <!-- 1. AUTHENTICATION VIEW (STUDENT 1ST & ADMIN TAB NEXT TO IT) -->
+    <!-- 1. AUTHENTICATION VIEW                              -->
     <!-- =================================================== -->
     <div class="auth-wrapper" id="auth-view" style="display: flex;">
         <div class="auth-container">
@@ -370,10 +251,9 @@
                     <span class="logo-icon">⚡</span>
                     <span class="logo-text">CODE RELAY</span>
                 </div>
-                <p class="auth-subtitle">College Coding Competition Platform</p>
+                <p class="auth-subtitle">College Coding Competition</p>
             </div>
 
-            <!-- ROLE SWITCHER TABS (STUDENT 1ST, ADMIN NEXT TO IT) -->
             <div class="auth-role-tabs">
                 <button type="button" class="role-tab active" id="tab-btn-student">
                     <span>🎓</span> Student Login
@@ -383,16 +263,13 @@
                 </button>
             </div>
 
-            <!-- STUDENT LOGIN CARD (1ST DEFAULT) -->
+            <!-- STUDENT LOGIN -->
             <div class="auth-card" id="login-box">
                 <h2 class="auth-card-title">Student Login</h2>
-                <p class="auth-card-desc">Enter your Register Number & Password to access the competition arena.</p>
-
+                <p class="auth-card-desc">Enter your Register Number & Password to access the competition portal.</p>
                 <div class="auth-error-banner" id="login-error-banner" style="display: none;">
-                    <span class="error-icon">⚠️</span>
-                    <span id="login-error-text">Invalid credentials</span>
+                    <span>⚠️</span><span id="login-error-text">Invalid credentials</span>
                 </div>
-
                 <form id="form-login" onsubmit="return false;" autocomplete="off">
                     <div class="form-group">
                         <label for="login-reg-no">Register Number</label>
@@ -401,71 +278,62 @@
                             <input type="text" id="login-reg-no" placeholder="e.g. REG1001" autocomplete="off" required>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label for="login-password">Password</label>
                         <div class="input-icon-wrapper">
                             <span class="input-icon">🔒</span>
-                            <input type="text" id="login-password" class="password-masked" placeholder="Enter password" autocomplete="off" required>
-                            <button type="button" class="btn-toggle-pwd" id="btn-toggle-login-pwd" title="Show/Hide Password">👁️</button>
+                            <input type="text" id="login-password" class="password-masked" placeholder="Enter your password" autocomplete="off" required>
+                            <button type="button" class="btn-toggle-pwd" id="btn-toggle-login-pwd">👁️</button>
                         </div>
                     </div>
-
                     <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-login-submit">
                         <span class="btn-text">Login to Dashboard</span>
+                        <span class="btn-spinner" style="display:none;">⌛ Logging in...</span>
                     </button>
                 </form>
-
                 <div class="auth-footer-link">
                     <span>New Student?</span>
-                    <button type="button" class="link-btn" id="link-to-register">Register Account</button>
+                    <button type="button" class="link-btn" id="link-to-register">Register Here</button>
                 </div>
             </div>
 
-            <!-- ADMIN LOGIN CARD (NEXT TO STUDENT LOGIN) -->
+            <!-- ADMIN LOGIN -->
             <div class="auth-card" id="admin-login-box" style="display: none;">
                 <h2 class="auth-card-title" style="color: var(--accent-purple);">Admin Control Portal</h2>
-                <p class="auth-card-desc">Enter admin credentials to monitor live student activity.</p>
-
+                <p class="auth-card-desc">Enter admin credentials to monitor the competition.</p>
                 <div class="auth-error-banner" id="admin-error-banner" style="display: none;">
-                    <span class="error-icon">⚠️</span>
-                    <span id="admin-error-text">Invalid admin credentials</span>
+                    <span>⚠️</span><span id="admin-error-text">Invalid admin credentials</span>
                 </div>
-
                 <form id="form-admin-direct-login" onsubmit="return false;" autocomplete="off">
                     <div class="form-group">
                         <label for="admin-user-input">Admin Username</label>
                         <div class="input-icon-wrapper">
                             <span class="input-icon">🛡️</span>
-                            <input type="text" id="admin-user-input" placeholder="e.g. AdminCSE" autocomplete="off" required>
+                            <input type="text" id="admin-user-input" placeholder="Enter admin username" autocomplete="off" required>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label for="admin-pass-input">Admin Password</label>
                         <div class="input-icon-wrapper">
                             <span class="input-icon">🔒</span>
                             <input type="password" id="admin-pass-input" placeholder="Enter admin password" autocomplete="off" required>
-                            <button type="button" class="btn-toggle-pwd" id="btn-toggle-admin-pwd" title="Show/Hide Password">👁️</button>
+                            <button type="button" class="btn-toggle-pwd" id="btn-toggle-admin-pwd">👁️</button>
                         </div>
                     </div>
-
-                    <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-admin-submit" style="background-color: var(--accent-purple); border-color: var(--accent-purple); margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-admin-submit" style="background-color:var(--accent-purple);border-color:var(--accent-purple);margin-top:1rem;">
                         <span class="btn-text">🛡️ Access Admin Control Portal</span>
+                        <span class="btn-spinner" style="display:none;">⌛ Verifying...</span>
                     </button>
                 </form>
             </div>
 
-            <!-- STUDENT REGISTRATION CARD -->
+            <!-- STUDENT REGISTRATION -->
             <div class="auth-card" id="register-box" style="display: none;">
                 <h2 class="auth-card-title">Student Registration</h2>
-                <p class="auth-card-desc">Create your student account to participate.</p>
-
+                <p class="auth-card-desc">Create your student account to enter the competition.</p>
                 <div class="auth-error-banner" id="register-error-banner" style="display: none;">
-                    <span class="error-icon">⚠️</span>
-                    <span id="register-error-text">Registration error</span>
+                    <span>⚠️</span><span id="register-error-text">Registration error</span>
                 </div>
-
                 <form id="form-register" onsubmit="return false;" autocomplete="off">
                     <div class="form-group">
                         <label for="reg-fullname">Full Name</label>
@@ -474,7 +342,6 @@
                             <input type="text" id="reg-fullname" placeholder="e.g. Sarah Jenkins" autocomplete="off" required>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label for="reg-num">Register Number</label>
                         <div class="input-icon-wrapper">
@@ -482,21 +349,28 @@
                             <input type="text" id="reg-num" placeholder="e.g. REG202601" autocomplete="off" required>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="reg-password">Password</label>
-                        <div class="input-icon-wrapper">
-                            <span class="input-icon">🔒</span>
-                            <input type="text" id="reg-password" class="password-masked" placeholder="Min 4 chars" autocomplete="off" required>
-                            <button type="button" class="btn-toggle-pwd" id="btn-toggle-reg-pwd" title="Show/Hide Password">👁️</button>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="reg-password">Password</label>
+                            <div class="input-icon-wrapper">
+                                <span class="input-icon">🔒</span>
+                                <input type="text" id="reg-password" class="password-masked" placeholder="Min 4 chars" autocomplete="off" required>
+                                <button type="button" class="btn-toggle-pwd" id="btn-toggle-reg-pwd">👁️</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-confirm-password">Confirm Password</label>
+                            <div class="input-icon-wrapper">
+                                <span class="input-icon">🔒</span>
+                                <input type="text" id="reg-confirm-password" class="password-masked" placeholder="Re-enter password" autocomplete="off" required>
+                            </div>
                         </div>
                     </div>
-
                     <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-register-submit">
                         <span class="btn-text">Create Account & Continue</span>
+                        <span class="btn-spinner" style="display:none;">⌛ Registering...</span>
                     </button>
                 </form>
-
                 <div class="auth-footer-link">
                     <span>Already registered?</span>
                     <button type="button" class="link-btn" id="link-to-login">Login Here</button>
@@ -516,46 +390,30 @@
                     <h1 class="welcome-title" id="dash-greeting">Welcome, Student!</h1>
                     <p class="welcome-subtitle">CODE RELAY - College Coding Competition</p>
                 </div>
-                <button class="btn btn-danger-outline" id="btn-dash-logout">
-                    <span>🚪</span> Logout
-                </button>
+                <button class="btn btn-danger-outline" id="btn-dash-logout">🚪 Logout</button>
             </div>
 
             <div class="dash-grid">
-                <div class="dash-card profile-card">
+                <div class="dash-card">
                     <div class="dash-card-header">
-                        <span class="dash-card-icon">👤</span>
-                        <h3>Student Profile</h3>
+                        <span class="dash-card-icon">👤</span><h3>Student Profile</h3>
                     </div>
                     <div class="dash-card-body">
-                        <div class="info-row">
-                            <span class="info-label">Full Name:</span>
-                            <span class="info-value" id="dash-student-name">--</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Register Number:</span>
-                            <span class="info-value highlight" id="dash-reg-no">--</span>
-                        </div>
+                        <div class="info-row"><span class="info-label">Full Name:</span><span class="info-value" id="dash-student-name">--</span></div>
+                        <div class="info-row"><span class="info-label">Register Number:</span><span class="info-value highlight" id="dash-reg-no">--</span></div>
                     </div>
                 </div>
-
-                <div class="dash-card status-card">
+                <div class="dash-card">
                     <div class="dash-card-header">
-                        <span class="dash-card-icon">⚡</span>
-                        <h3>Competition Status</h3>
+                        <span class="dash-card-icon">⚡</span><h3>Competition Status</h3>
                     </div>
                     <div class="dash-card-body">
-                        <div class="info-row">
-                            <span class="info-label">Status:</span>
-                            <span class="status-badge" id="dash-comp-status">Ready to Start</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Current Round:</span>
-                            <span class="info-value" id="dash-current-round">Round 1</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Problems Solved:</span>
-                            <span class="info-value" id="dash-problems-solved">0 / 5</span>
+                        <div class="info-row"><span class="info-label">Status:</span><span class="status-badge" id="dash-comp-status">Ready to Start</span></div>
+                        <div class="info-row"><span class="info-label">Current Round:</span><span class="info-value" id="dash-current-round">Round 1</span></div>
+                        <div class="info-row"><span class="info-label">Problems Solved:</span><span class="info-value" id="dash-problems-solved">0 / 5</span></div>
+                        <div class="info-row" id="dash-total-time-row" style="display:none;">
+                            <span class="info-label">Overall Time Taken:</span>
+                            <span class="info-value highlight" id="dash-total-time-val" style="color:var(--accent-green);font-weight:700;">--</span>
                         </div>
                     </div>
                 </div>
@@ -578,20 +436,19 @@
     <!-- =================================================== -->
     <header class="app-header" id="app-header" style="display: none;">
         <div class="header-brand">
-            <div class="brand-logo" id="brand-logo-btn" style="cursor: pointer;" title="Return to Dashboard">
+            <div class="brand-logo" id="brand-logo-btn" style="cursor:pointer;" title="Return to Dashboard">
                 <span class="logo-icon">⚡</span>
                 <span class="logo-text">CODE RELAY</span>
             </div>
             <span class="system-badge" id="student-tag-badge">REG1001</span>
         </div>
-
         <div class="header-status">
-            <div class="status-chip round-chip" id="round-status-chip">
-                <span class="chip-dot"></span>
+            <div class="status-chip" id="round-status-chip">
+                <span class="chip-dot dot-active"></span>
                 <span id="header-round-text">ROUND 1 IN PROGRESS</span>
             </div>
-            <div class="status-chip timer-chip">
-                <span class="timer-icon">⏳</span>
+            <div class="status-chip timer-chip" title="Global 90 Minute Competition Timer">
+                <span>⏳</span>
                 <span id="timer-display">01h 30m 00s</span>
             </div>
         </div>
@@ -607,6 +464,14 @@
         </aside>
 
         <main class="workspace" id="main-workspace">
+            <div class="security-banner" id="security-alert-banner" style="display:none;">
+                <div class="alert-icon">🔒</div>
+                <div class="alert-content">
+                    <h4 class="alert-title">Access Denied: Problem Locked</h4>
+                    <p class="alert-message" id="security-alert-msg">You cannot access this problem until previous problems are completed.</p>
+                </div>
+            </div>
+
             <div class="problem-container" id="problem-view">
                 <div class="problem-header-bar">
                     <div class="problem-identity">
@@ -619,39 +484,38 @@
                 <div class="problem-statement">
                     <div class="statement-section">
                         <h3 class="section-heading">Problem Description</h3>
-                        <p class="statement-text" id="prob-description">Given N integers, calculate and print the second largest element.</p>
+                        <p class="statement-text" id="prob-description">Loading...</p>
                     </div>
-
                     <div class="statement-grid">
                         <div class="statement-section">
                             <h3 class="section-heading">Input Format</h3>
-                            <div class="format-box" id="prob-input-format">First line N. Second line N integers.</div>
+                            <div class="format-box" id="prob-input-format">Loading...</div>
                         </div>
                         <div class="statement-section">
                             <h3 class="section-heading">Output Format</h3>
-                            <div class="format-box" id="prob-output-format">Print the second largest integer.</div>
+                            <div class="format-box" id="prob-output-format">Loading...</div>
                         </div>
                     </div>
-
                     <div class="statement-section">
                         <h3 class="section-heading">Constraints</h3>
-                        <div class="code-box" id="prob-constraints">1 ≤ N ≤ 100000</div>
+                        <div class="code-box" id="prob-constraints">Loading...</div>
                     </div>
-
                     <div class="samples-container">
                         <div class="sample-block">
-                            <div class="sample-header"><span>Sample Input</span></div>
-                            <pre class="sample-box" id="prob-sample-input">5\n10 20 30 40 50</pre>
+                            <div class="sample-header">
+                                <span>Sample Input</span>
+                                <button class="btn-copy" onclick="copySampleInput()">Copy</button>
+                            </div>
+                            <pre class="sample-box" id="prob-sample-input"></pre>
                         </div>
                         <div class="sample-block">
                             <div class="sample-header"><span>Sample Output</span></div>
-                            <pre class="sample-box" id="prob-sample-output">40</pre>
+                            <pre class="sample-box" id="prob-sample-output"></pre>
                         </div>
                     </div>
-
                     <div class="statement-section">
                         <h3 class="section-heading">Explanation</h3>
-                        <p class="statement-text" id="prob-explanation">40 is the second largest.</p>
+                        <p class="statement-text explanation-text" id="prob-explanation"></p>
                     </div>
                 </div>
 
@@ -660,31 +524,41 @@
                         <div class="editor-title">
                             <span class="editor-lang-icon">C</span>
                             <span>C CODE EDITOR</span>
-                            <span class="compiler-badge">GCC / Clang Engine</span>
+                            <span class="compiler-badge">GCC Compiler Engine</span>
                         </div>
                         <button class="btn btn-secondary btn-xs" id="btn-reset-code">Reset Code</button>
                     </div>
-
                     <div class="editor-wrapper">
                         <div class="line-numbers" id="line-numbers">1</div>
-                        <textarea class="code-textarea" id="code-editor" spellcheck="false" placeholder="Write C code here..."></textarea>
+                        <textarea class="code-textarea" id="code-editor" spellcheck="false" placeholder="Write your C code here..." autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
                     </div>
-
-                    <div class="custom-input-container" style="margin-top: 1rem;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: var(--accent-blue); margin-bottom: 0.35rem;">📥 TEST INPUT (RUN CODE)</div>
-                        <textarea id="custom-input-text" class="code-textarea" style="height: 65px;" placeholder="Enter custom test input..."></textarea>
+                    <div class="custom-input-container" id="custom-input-box" style="display:block;margin-top:1rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;">
+                            <span style="font-weight:600;font-size:0.85rem;color:var(--accent-blue);">📥 TEST INPUT (RUN CODE)</span>
+                            <span style="font-size:0.75rem;color:var(--text-muted);">Pre-filled with sample input</span>
+                        </div>
+                        <textarea id="custom-input-text" class="code-textarea" style="height:70px;" placeholder="Enter test input here..."></textarea>
                     </div>
-
                     <div class="editor-actions">
-                        <button class="btn btn-secondary" id="btn-run-code">▶ Run Code</button>
-                        <button class="btn btn-primary" id="btn-submit-code">🚀 Submit Code</button>
+                        <button class="btn btn-secondary" id="btn-run-code">
+                            <span class="btn-icon">▶</span> Run Code
+                        </button>
+                        <button class="btn btn-primary" id="btn-submit-code">
+                            <span class="btn-icon">🚀</span> Submit Code
+                        </button>
                     </div>
                 </div>
 
-                <div class="console-section" id="console-section" style="display: none;">
-                    <div class="verdict-banner" id="verdict-banner">
-                        <span class="verdict-tag" id="verdict-tag">Verdict: Accepted</span>
-                        <span class="exec-time" id="exec-time">Execution Time: 0.01 seconds</span>
+                <div class="console-section" id="console-section" style="display:none;">
+                    <div class="console-header">
+                        <div class="verdict-banner" id="verdict-banner">
+                            <span class="verdict-tag" id="verdict-tag">Verdict: Accepted</span>
+                            <span class="exec-time" id="exec-time">Execution Time: 0.02 seconds</span>
+                        </div>
+                    </div>
+                    <div class="unlock-toast" id="unlock-toast" style="display:none;">
+                        <div class="toast-icon">✨</div>
+                        <div class="toast-content" id="unlock-toast-content"></div>
                     </div>
                     <div class="console-output" id="console-output-box">
                         <pre id="console-stdout"></pre>
@@ -696,17 +570,16 @@
     </div>
 
     <!-- =================================================== -->
-    <!-- 4. ADMIN CONTROL PORTAL DASHBOARD VIEW               -->
-    <!-- (NO STUDENT VIEW LINK OR BUTTONS!)                  -->
+    <!-- 4. ADMIN CONTROL PORTAL VIEW                        -->
     <!-- =================================================== -->
     <div class="admin-wrapper" id="admin-view" style="display: none;">
-        <header class="app-header">
+        <header class="app-header admin-header">
             <div class="header-brand">
                 <div class="brand-logo">
                     <span class="logo-icon">🛡️</span>
                     <span class="logo-text">ADMIN CONTROL PORTAL</span>
                 </div>
-                <span class="system-badge" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-purple);">Master Overview</span>
+                <span class="system-badge" style="background:rgba(139,92,246,0.2);border-color:var(--accent-purple);color:var(--accent-purple);">Master Overview</span>
             </div>
             <div class="header-status">
                 <button class="btn btn-secondary btn-sm" id="btn-admin-refresh">🔄 Refresh Data</button>
@@ -720,20 +593,20 @@
                     <span class="stat-icon">👥</span>
                     <div class="stat-info">
                         <span class="stat-value" id="stat-total-students">0</span>
-                        <span class="stat-label">Registered Students</span>
+                        <span class="stat-label">Total Registered Students</span>
                     </div>
                 </div>
                 <div class="stat-card">
                     <span class="stat-icon">⚡</span>
                     <div class="stat-info">
-                        <span class="stat-value" id="stat-active-students" style="color: var(--accent-blue);">0</span>
+                        <span class="stat-value" id="stat-active-students" style="color:var(--accent-blue);">0</span>
                         <span class="stat-label">Active Competitors</span>
                     </div>
                 </div>
                 <div class="stat-card">
                     <span class="stat-icon">🏆</span>
                     <div class="stat-info">
-                        <span class="stat-value" id="stat-completed-students" style="color: var(--accent-green);">0</span>
+                        <span class="stat-value" id="stat-completed-students" style="color:var(--accent-green);">0</span>
                         <span class="stat-label">Completed All Problems</span>
                     </div>
                 </div>
@@ -742,7 +615,7 @@
             <div class="admin-panel">
                 <div class="admin-panel-header">
                     <h2>📊 Live Student Process & Progress Monitor</h2>
-                    <span class="panel-subtitle">Real-time status tracking for competing students</span>
+                    <span class="panel-subtitle">Real-time status tracking for every competing student</span>
                 </div>
                 <div class="table-wrapper">
                     <table class="admin-table">
@@ -751,608 +624,1190 @@
                                 <th>Reg Number</th>
                                 <th>Student Name</th>
                                 <th>Status</th>
-                                <th>Round</th>
-                                <th>Problem</th>
-                                <th>Completed & Times</th>
-                                <th>Time Remaining</th>
+                                <th>Current Round</th>
+                                <th>Active Problem</th>
+                                <th>Completed Problems & Times</th>
+                                <th>Time Remaining (90m)</th>
                                 <th>Tab Violations</th>
-                                <th>Latest Activity</th>
+                                <th>Latest Student Action</th>
                                 <th>Admin Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-students-tbody"></tbody>
+                        <tbody id="admin-students-tbody">
+                            <tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--text-muted);">No students registered yet.</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modals -->
-    <div class="modal-backdrop" id="celebration-modal" style="display: none;">
+    <!-- =================================================== -->
+    <!-- MODALS                                              -->
+    <!-- =================================================== -->
+    <div class="modal-backdrop" id="celebration-modal" style="display:none;">
         <div class="modal-card">
-            <div style="font-size: 3rem;">🎉</div>
-            <h2 class="modal-title" id="modal-title">Round Completed!</h2>
-            <p class="modal-message" id="modal-message">Congratulations!</p>
+            <div class="modal-header">
+                <div class="trophy-bounce">🎉</div>
+                <h2 class="modal-title" id="modal-title">Round Completed!</h2>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message" id="modal-message">Congratulations!</p>
+            </div>
             <div class="modal-footer">
-                <button class="btn btn-primary btn-lg" id="btn-modal-continue">Continue to Next Round</button>
+                <button class="btn btn-primary btn-lg" id="btn-modal-continue">Continue to Round 2</button>
             </div>
         </div>
     </div>
 
-    <div class="modal-backdrop" id="tab-suspended-modal" style="display: none; z-index: 10000;">
-        <div class="modal-card" style="border: 2px solid var(--accent-rose);">
-            <div style="font-size: 3rem;">🚨</div>
-            <h2 class="modal-title" style="color: var(--accent-rose);">COMPETITION SUSPENDED</h2>
-            <p class="modal-message">
-                Your session is suspended due to tab-switching violations. Please notify your invigilator or administrator.
-            </p>
+    <div class="modal-backdrop" id="maxview-prompt-modal" style="display:none;">
+        <div class="modal-card maxview-card">
+            <div class="modal-header">
+                <div class="maxview-icon">🖥️</div>
+                <h2 class="modal-title">Maximum View Required</h2>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message">Welcome to the Coding Competition Platform!<br><br>To ensure a fair competition environment, <strong>you must view this platform in Maximum View (Fullscreen)</strong> to enter.</p>
+            </div>
+            <div class="modal-footer maxview-footer">
+                <button class="btn btn-primary btn-lg" id="btn-accept-maxview">🖥️ Enter in Maximum View</button>
+                <button class="btn btn-secondary btn-lg" id="btn-decline-maxview">Decline</button>
+            </div>
         </div>
     </div>
 
-    <div class="modal-backdrop" id="admin-process-modal" style="display: none;">
-        <div class="modal-card" style="max-width: 650px; text-align: left;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>🔍 Student Activity Audit</h2>
+    <div class="modal-backdrop maxview-blocked-backdrop" id="maxview-blocked-overlay" style="display:none;">
+        <div class="modal-card maxview-card blocked-card">
+            <div class="modal-header">
+                <div class="blocked-icon">🛑</div>
+                <h2 class="modal-title" style="color:var(--accent-rose);">Maximum View Required</h2>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message" style="font-size:1.1rem;font-weight:700;color:#fff;">You need to visit only in maximum view.</p>
+                <p style="margin-top:0.75rem;color:#cbd5e1;font-size:0.95rem;">Access to the problem set and code editor is restricted until Maximum View is restored.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-lg" id="btn-restore-maxview">🖥️ Switch to Maximum View</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="timeup-modal" style="display:none;">
+        <div class="modal-card blocked-card" style="max-width:520px;">
+            <div class="modal-header">
+                <div class="blocked-icon">⏰</div>
+                <h2 class="modal-title" style="color:var(--accent-amber);">Time Up! Competition Ended</h2>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message" style="font-size:1.05rem;line-height:1.6;color:#fff;">The <strong>1 hour and 30 minutes (90 minutes)</strong> overall competition time limit has expired.</p>
+                <p style="margin-top:0.75rem;color:#cbd5e1;font-size:0.9rem;">Your submission results and per-problem completion times up to this moment have been recorded.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-lg" id="btn-timeup-dashboard">📊 View Final Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="tab-suspended-modal" style="display:none;z-index:10000;">
+        <div class="modal-card blocked-card" style="max-width:540px;border:2px solid var(--accent-rose);">
+            <div class="modal-header">
+                <div class="blocked-icon">🚨</div>
+                <h2 class="modal-title" style="color:var(--accent-rose);">COMPETITION SUSPENDED</h2>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message" style="font-size:1.1rem;line-height:1.6;color:#fff;">Your competition session has been <strong>SUSPENDED</strong> due to multiple tab-switching violations (switched tabs <strong>more than 2 times</strong>).</p>
+                <p style="margin-top:0.75rem;color:#cbd5e1;font-size:0.95rem;">🔒 All code execution and submissions are stopped. <strong>Please notify your invigilator or administrator.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <span class="status-badge status-locked" style="font-size:0.95rem;padding:0.5rem 1rem;">Status: Awaiting Admin Unlock</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="admin-process-modal" style="display:none;">
+        <div class="modal-card leaderboard-card" style="max-width:700px;">
+            <div class="modal-header" style="flex-direction:row;justify-content:space-between;align-items:center;">
+                <h2 style="font-size:1.25rem;">🔍 Student Activity & Process Audit</h2>
                 <button class="btn-close" id="btn-close-admin-modal">&times;</button>
             </div>
-            <div style="margin-top: 1rem;">
-                <p>Student: <strong id="audit-student-name">--</strong> (<span id="audit-reg-num">--</span>)</p>
-                <div id="audit-log-list" style="margin-top: 1rem; max-height: 300px; overflow-y: auto;"></div>
+            <div class="modal-body">
+                <div class="info-row" style="margin-bottom:0.5rem;">
+                    <span class="info-label">Student:</span>
+                    <span class="info-value" id="audit-student-name">--</span>
+                </div>
+                <div class="info-row" style="margin-bottom:1rem;">
+                    <span class="info-label">Register Number:</span>
+                    <span class="info-value highlight" id="audit-reg-num">--</span>
+                </div>
+                <h4 style="color:var(--accent-blue);margin-bottom:0.5rem;font-size:0.9rem;">ACTIVITY TIMELINE LOG:</h4>
+                <div class="audit-log-container" id="audit-log-list"></div>
             </div>
         </div>
     </div>
 
     <!-- =================================================== -->
-    <!-- COMPLETE STANDALONE CLIENT SCRIPT                   -->
+    <!-- COMPLETE JAVASCRIPT - app.js FULLY MERGED           -->
+    <!-- ALL FEATURES: Auth, Dashboard, Workspace,           -->
+    <!-- Anti-Cheat, Admin Monitor, Live Polling, Timer      -->
     <!-- =================================================== -->
     <script>
-        // System Databases & Storage Simulation
-        const PROBLEMS = {
-            1: {
-                id: 1, round: 1, number: 1, title: "Second Largest Element", difficulty: "Medium",
-                description: "Given N integers, calculate and print the second largest element.",
-                input_format: "First line N. Second line N space-separated integers.",
-                output_format: "Print the second largest integer.",
-                constraints: "1 ≤ N ≤ 100000",
-                sample_input: "5\n10 20 30 40 50", sample_output: "40",
-                explanation: "Second largest element is 40.",
-                template: "#include <stdio.h>\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    int arr[n];\n    for(int i = 0; i < n; i++) {\n        scanf(\"%d\", &arr[i]);\n    }\n    int first = -1e9, second = -1e9;\n    for(int i = 0; i < n; i++) {\n        if(arr[i] > first) {\n            second = first;\n            first = arr[i];\n        } else if(arr[i] > second && arr[i] != first) {\n            second = arr[i];\n        }\n    }\n    printf(\"%d\\n\", second);\n    return 0;\n}",
-                solve: function(inp) {
-                    const nums = inp.trim().split(/\s+/).map(Number).slice(1);
-                    if (nums.length < 2) return "N/A";
-                    let first = -Infinity, second = -Infinity;
-                    for (let x of nums) {
-                        if (x > first) { second = first; first = x; }
-                        else if (x > second && x !== first) { second = x; }
-                    }
-                    return String(second);
-                }
-            },
-            2: {
-                id: 2, round: 1, number: 2, title: "Palindrome Number", difficulty: "Easy",
-                description: "Given an integer N, check if it is a palindrome.",
-                input_format: "A single integer N.", output_format: "Print YES if palindrome, else NO.",
-                constraints: "-10^9 ≤ N ≤ 10^9",
-                sample_input: "121", sample_output: "YES", explanation: "121 read backwards is 121.",
-                template: "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s[100];\n    if (scanf(\"%s\", s) != 1) return 0;\n    int len = strlen(s);\n    int isPal = 1;\n    for(int i = 0; i < len / 2; i++) {\n        if(s[i] != s[len - 1 - i]) { isPal = 0; break; }\n    }\n    if(isPal) printf(\"YES\\n\"); else printf(\"NO\\n\");\n    return 0;\n}",
-                solve: function(inp) {
-                    const str = inp.trim();
-                    const rev = str.split("").reverse().join("");
-                    return str === rev ? "YES" : "NO";
-                }
-            },
-            3: {
-                id: 3, round: 1, number: 3, title: "Character Frequency", difficulty: "Easy",
-                description: "Count occurrence of character C in string S.",
-                input_format: "String S followed by character C.", output_format: "Count of character C.",
-                constraints: "1 ≤ |S| ≤ 1000", sample_input: "hello l", sample_output: "2", explanation: "'l' appears twice.",
-                template: "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char str[1000], c;\n    if (scanf(\"%s %c\", str, &c) != 2) return 0;\n    int count = 0;\n    for(int i = 0; i < strlen(str); i++) {\n        if(str[i] == c) count++;\n    }\n    printf(\"%d\\n\", count);\n    return 0;\n}",
-                solve: function(inp) {
-                    const parts = inp.trim().split(/\s+/);
-                    if (parts.length < 2) return "0";
-                    const str = parts[0], ch = parts[1];
-                    let cnt = 0;
-                    for (let c of str) { if (c === ch) cnt++; }
-                    return String(cnt);
-                }
-            },
-            4: {
-                id: 4, round: 2, number: 4, title: "Find the Missing Number", difficulty: "Medium",
-                description: "Given N-1 distinct integers from 1 to N, find the missing integer.",
-                input_format: "First line N. Second line N-1 integers.", output_format: "The missing integer.",
-                constraints: "1 ≤ N ≤ 100000", sample_input: "5\n1 2 4 5", sample_output: "3", explanation: "3 is missing.",
-                template: "#include <stdio.h>\n\nint main() {\n    long long n, sum = 0, val;\n    if (scanf(\"%lld\", &n) != 1) return 0;\n    for(int i = 0; i < n - 1; i++) {\n        scanf(\"%lld\", &val);\n        sum += val;\n    }\n    long long total = (n * (n + 1)) / 2;\n    printf(\"%lld\\n\", total - sum);\n    return 0;\n}",
-                solve: function(inp) {
-                    const nums = inp.trim().split(/\s+/).map(Number);
-                    const n = nums[0];
-                    const arr = nums.slice(1);
-                    const total = (n * (n + 1)) / 2;
-                    const sum = arr.reduce((a, b) => a + b, 0);
-                    return String(total - sum);
-                }
-            },
-            5: {
-                id: 5, round: 2, number: 5, title: "Find Duplicate Number", difficulty: "Medium",
-                description: "Given array of N+1 integers where each is between 1 and N, find the duplicate.",
-                input_format: "First line N. Second line N+1 integers.", output_format: "The duplicate number.",
-                constraints: "1 ≤ N ≤ 100000", sample_input: "5\n1 3 4 2 2", sample_output: "2", explanation: "2 is duplicated.",
-                template: "#include <stdio.h>\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    int freq[100001] = {0}, val;\n    for(int i = 0; i <= n; i++) {\n        scanf(\"%d\", &val);\n        if(freq[val] > 0) {\n            printf(\"%d\\n\", val);\n            break;\n        }\n        freq[val]++;\n    }\n    return 0;\n}",
-                solve: function(inp) {
-                    const nums = inp.trim().split(/\s+/).map(Number).slice(1);
-                    const seen = new Set();
-                    for (let x of nums) {
-                        if (seen.has(x)) return String(x);
-                        seen.add(x);
-                    }
-                    return "None";
-                }
+/* ============================================================
+   STATE & PROBLEMS DATABASE
+   ============================================================ */
+const PROBLEMS_DB = {
+    1: {
+        id:1, round:1, number:1, title:"Second Largest Element", difficulty:"Medium",
+        description:"Given N integers, calculate and print the second largest element.",
+        input_format:"First line N. Second line N space-separated integers.",
+        output_format:"Print the second largest integer.",
+        constraints:"1 ≤ N ≤ 100000\n-10^9 ≤ A[i] ≤ 10^9",
+        sample_input:"5\n10 20 30 40 50", sample_output:"40",
+        explanation:"40 is the second largest element in the array.",
+        template:"#include <stdio.h>\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    long long arr[n];\n    for(int i = 0; i < n; i++) scanf(\"%lld\", &arr[i]);\n    long long first = -1e18, second = -1e18;\n    for(int i = 0; i < n; i++) {\n        if(arr[i] > first) { second = first; first = arr[i]; }\n        else if(arr[i] > second && arr[i] != first) second = arr[i];\n    }\n    printf(\"%lld\\n\", second);\n    return 0;\n}",
+        evaluate: function(inp) {
+            const lines = inp.trim().split('\n');
+            const nums = lines.slice(1).join(' ').trim().split(/\s+/).map(Number);
+            if (nums.length < 2) return "N/A";
+            let first = -Infinity, second = -Infinity;
+            for (let x of nums) {
+                if (x > first) { second = first; first = x; }
+                else if (x > second && x !== first) second = x;
             }
-        };
-
-        // State Manager
-        let currentUser = null;
-        let activeProblemId = 1;
-        let timerInterval = null;
-        let suspensionInterval = null;
-
-        function getDBUsers() { return JSON.parse(localStorage.getItem("code_relay_users") || "{}"); }
-        function saveDBUsers(users) { localStorage.setItem("code_relay_users", JSON.stringify(users)); }
-
-        function showToast(msg, icon = "✨") {
-            const container = document.getElementById("global-toast-container");
-            document.getElementById("global-toast-msg").innerText = msg;
-            document.getElementById("global-toast-icon").innerText = icon;
-            container.style.display = "block";
-            setTimeout(() => { container.style.display = "none"; }, 3500);
+            return String(second);
         }
-
-        function showView(viewName) {
-            localStorage.setItem("code_relay_active_view", viewName);
-            document.getElementById("auth-view").style.display = viewName === "auth" ? "flex" : "none";
-            document.getElementById("dashboard-view").style.display = viewName === "dashboard" ? "flex" : "none";
-            document.getElementById("app-header").style.display = viewName === "workspace" ? "flex" : "none";
-            document.getElementById("app-container").style.display = viewName === "workspace" ? "flex" : "none";
-            document.getElementById("admin-view").style.display = viewName === "admin" ? "block" : "none";
-
-            if (viewName === "admin") { renderAdminDashboard(); }
+    },
+    2: {
+        id:2, round:1, number:2, title:"Palindrome Number", difficulty:"Easy",
+        description:"Given an integer N, check if it is a palindrome. Negative numbers are not palindromes.",
+        input_format:"A single integer N.",
+        output_format:"Print YES if palindrome, else NO.",
+        constraints:"-10^9 ≤ N ≤ 10^9",
+        sample_input:"121", sample_output:"YES",
+        explanation:"121 read backwards is 121, so it is a palindrome.",
+        template:"#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s[50];\n    if (scanf(\"%s\", s) != 1) return 0;\n    int len = strlen(s), start = 0;\n    if(s[0] == '-') { printf(\"NO\\n\"); return 0; }\n    int isPal = 1;\n    for(int i = 0; i < len / 2; i++) {\n        if(s[i] != s[len-1-i]) { isPal = 0; break; }\n    }\n    printf(\"%s\\n\", isPal ? \"YES\" : \"NO\");\n    return 0;\n}",
+        evaluate: function(inp) {
+            const s = inp.trim();
+            if (s.startsWith('-')) return "NO";
+            return s === s.split('').reverse().join('') ? "YES" : "NO";
         }
-
-        // Init & Auth
-        document.addEventListener("DOMContentLoaded", () => {
-            setupHandlers();
-            checkSession();
-        });
-
-        function checkSession() {
-            const adminToken = localStorage.getItem("code_relay_admin_token");
-            if (adminToken) { showView("admin"); return; }
-
-            const userReg = localStorage.getItem("code_relay_current_user");
-            if (userReg) {
-                const users = getDBUsers();
-                if (users[userReg]) {
-                    currentUser = users[userReg];
-                    const savedView = localStorage.getItem("code_relay_active_view");
-                    const st = currentUser.state;
-                    if (st.competition_status === "IN_PROGRESS" || savedView === "workspace") {
-                        showView("workspace");
-                        loadProblem(parseInt(localStorage.getItem("code_relay_active_problem")) || st.current_problem_id || 1);
-                        startTimer();
-                    } else {
-                        showView("dashboard");
-                        renderDashboard();
-                    }
-                    return;
-                }
-            }
-            showView("auth");
+    },
+    3: {
+        id:3, round:1, number:3, title:"Character Frequency", difficulty:"Easy",
+        description:"Count the occurrence of a specific character C in string S.",
+        input_format:"First line: string S. Second line: character C.",
+        output_format:"Print the count of character C in S.",
+        constraints:"1 ≤ |S| ≤ 10000\nC is a single character",
+        sample_input:"hello\nl", sample_output:"2",
+        explanation:"'l' appears 2 times in 'hello'.",
+        template:"#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char str[10001], c[5];\n    if (scanf(\"%s\", str) != 1) return 0;\n    if (scanf(\"%s\", c) != 1) return 0;\n    int count = 0, len = strlen(str);\n    for(int i = 0; i < len; i++) {\n        if(str[i] == c[0]) count++;\n    }\n    printf(\"%d\\n\", count);\n    return 0;\n}",
+        evaluate: function(inp) {
+            const lines = inp.trim().split('\n');
+            if (lines.length < 2) return "0";
+            const str = lines[0].trim(), ch = lines[1].trim()[0];
+            return String([...str].filter(c => c === ch).length);
         }
+    },
+    4: {
+        id:4, round:2, number:4, title:"Find the Missing Number", difficulty:"Medium",
+        description:"Given N-1 distinct integers from 1 to N, find the missing integer.",
+        input_format:"First line N. Second line N-1 integers.",
+        output_format:"Print the missing integer.",
+        constraints:"1 ≤ N ≤ 100000",
+        sample_input:"5\n1 2 4 5", sample_output:"3",
+        explanation:"The missing number from 1..5 is 3.",
+        template:"#include <stdio.h>\n\nint main() {\n    long long n, sum = 0, val;\n    if (scanf(\"%lld\", &n) != 1) return 0;\n    for(int i = 0; i < n - 1; i++) {\n        scanf(\"%lld\", &val);\n        sum += val;\n    }\n    long long total = (n * (n + 1)) / 2;\n    printf(\"%lld\\n\", total - sum);\n    return 0;\n}",
+        evaluate: function(inp) {
+            const parts = inp.trim().split(/\s+/).map(Number);
+            const n = parts[0];
+            const arr = parts.slice(1);
+            const total = (n * (n + 1)) / 2;
+            return String(total - arr.reduce((a, b) => a + b, 0));
+        }
+    },
+    5: {
+        id:5, round:2, number:5, title:"Find Duplicate Number", difficulty:"Medium",
+        description:"Given an array of N+1 integers where each integer is between 1 and N, find the one duplicate number.",
+        input_format:"First line N. Second line N+1 integers.",
+        output_format:"Print the duplicate number.",
+        constraints:"1 ≤ N ≤ 100000",
+        sample_input:"5\n1 3 4 2 2", sample_output:"2",
+        explanation:"The number 2 appears twice.",
+        template:"#include <stdio.h>\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    int freq[100001] = {0}, val;\n    for(int i = 0; i <= n; i++) {\n        scanf(\"%d\", &val);\n        if(freq[val] > 0) { printf(\"%d\\n\", val); return 0; }\n        freq[val]++;\n    }\n    return 0;\n}",
+        evaluate: function(inp) {
+            const parts = inp.trim().split(/\s+/).map(Number).slice(1);
+            const seen = new Set();
+            for (let x of parts) { if (seen.has(x)) return String(x); seen.add(x); }
+            return "None";
+        }
+    }
+};
 
-        function setupHandlers() {
-            // Role Switcher
-            const tabStudent = document.getElementById("tab-btn-student");
-            const tabAdmin = document.getElementById("tab-btn-admin");
-            tabStudent.addEventListener("click", () => {
-                tabStudent.className = "role-tab active";
-                tabAdmin.className = "role-tab";
-                document.getElementById("login-box").style.display = "flex";
-                document.getElementById("admin-login-box").style.display = "none";
-                document.getElementById("register-box").style.display = "none";
-            });
-            tabAdmin.addEventListener("click", () => {
-                tabAdmin.className = "role-tab active admin-active";
-                tabStudent.className = "role-tab";
-                document.getElementById("login-box").style.display = "none";
-                document.getElementById("admin-login-box").style.display = "flex";
-                document.getElementById("register-box").style.display = "none";
-            });
+const ALL_PROBLEMS_META = [
+    {id:1,round:1,number:1,title:"Second Largest Element"},
+    {id:2,round:1,number:2,title:"Palindrome Number"},
+    {id:3,round:1,number:3,title:"Character Frequency"},
+    {id:4,round:2,number:4,title:"Find the Missing Number"},
+    {id:5,round:2,number:5,title:"Find Duplicate Number"}
+];
 
-            document.getElementById("link-to-register").addEventListener("click", () => {
-                document.getElementById("login-box").style.display = "none";
-                document.getElementById("register-box").style.display = "flex";
-            });
-            document.getElementById("link-to-login").addEventListener("click", () => {
-                document.getElementById("register-box").style.display = "none";
-                document.getElementById("login-box").style.display = "flex";
-            });
+/* ============================================================
+   APP STATE
+   ============================================================ */
+let appState = {
+    user_name:"", register_number:"", role:"STUDENT",
+    current_problem_id:1, completed_problems:[], problem_times:{},
+    current_round:1, round_status:"ROUND 1 IN PROGRESS",
+    competition_status:"NOT_STARTED",
+    elapsed_seconds:0, remaining_seconds:5400,
+    tab_switch_count:0, is_suspended:false,
+    start_time:null
+};
 
-            // Logins
-            document.getElementById("form-login").addEventListener("submit", (e) => {
-                e.preventDefault();
-                const regNo = document.getElementById("login-reg-no").value.trim().toUpperCase();
-                const pwd = document.getElementById("login-password").value;
-                const users = getDBUsers();
-                if (users[regNo] && users[regNo].password === pwd) {
-                    currentUser = users[regNo];
-                    localStorage.setItem("code_relay_current_user", regNo);
-                    logActivity(regNo, "Logged into Student Portal");
-                    showToast(`Welcome back, ${currentUser.full_name}!`, "👋");
-                    showView("dashboard");
-                    renderDashboard();
-                } else {
-                    document.getElementById("login-error-text").innerText = "Invalid Register Number or Password.";
-                    document.getElementById("login-error-banner").style.display = "flex";
-                }
-            });
+let activeProblemId = 1;
+let currentProblemData = null;
+let timerInterval = null;
+let suspensionCheckInterval = null;
+let adminRefreshInterval = null;
+let maxViewAccepted = false;
+let allAdminStudents = [];
 
-            document.getElementById("form-register").addEventListener("submit", (e) => {
-                e.preventDefault();
-                const name = document.getElementById("reg-fullname").value.trim();
-                const regNo = document.getElementById("reg-num").value.trim().toUpperCase();
-                const pwd = document.getElementById("reg-password").value;
-                const users = getDBUsers();
-                if (users[regNo]) {
-                    document.getElementById("register-error-text").innerText = "Register Number already exists.";
-                    document.getElementById("register-error-banner").style.display = "flex";
-                    return;
-                }
-                users[regNo] = {
-                    register_number: regNo, full_name: name, password: pwd,
-                    state: {
-                        current_problem_id: 1, completed_problems: [], problem_times: {},
-                        current_round: 1, competition_status: "NOT_STARTED",
-                        start_time: null, tab_switch_count: 0, is_suspended: false,
-                        activity_log: [{ time: new Date().toLocaleTimeString(), event: "Registered Account" }]
-                    }
-                };
-                saveDBUsers(users);
-                currentUser = users[regNo];
-                localStorage.setItem("code_relay_current_user", regNo);
-                showToast("Account created successfully!", "🎉");
+const ADMIN_USERNAME = "AdminCSE";
+const ADMIN_PASSWORD = "AdminCSE057";
+
+/* ============================================================
+   LOCAL STORAGE HELPERS
+   ============================================================ */
+function getDB() { return JSON.parse(localStorage.getItem("cr_users") || "{}"); }
+function saveDB(u) { localStorage.setItem("cr_users", JSON.stringify(u)); }
+function getCurrentUserReg() { return localStorage.getItem("cr_current_user"); }
+function isAdminLoggedIn() { return !!localStorage.getItem("cr_admin_token"); }
+
+function syncCurrentUser() {
+    const reg = getCurrentUserReg();
+    if (!reg) return;
+    const db = getDB();
+    if (db[reg]) {
+        const st = db[reg].state;
+        appState.register_number = db[reg].register_number;
+        appState.user_name = db[reg].full_name;
+        appState.current_problem_id = st.current_problem_id || 1;
+        appState.completed_problems = st.completed_problems || [];
+        appState.problem_times = st.problem_times || {};
+        appState.current_round = st.current_round || 1;
+        appState.round_status = st.round_status || "ROUND 1 IN PROGRESS";
+        appState.competition_status = st.competition_status || "NOT_STARTED";
+        appState.tab_switch_count = st.tab_switch_count || 0;
+        appState.is_suspended = st.is_suspended || false;
+        appState.start_time = st.start_time || null;
+        appState.remaining_seconds = st.remaining_seconds !== undefined ? st.remaining_seconds : 5400;
+    }
+}
+
+function saveCurrentUser() {
+    const reg = getCurrentUserReg();
+    if (!reg) return;
+    const db = getDB();
+    if (db[reg]) {
+        db[reg].state.current_problem_id = appState.current_problem_id;
+        db[reg].state.completed_problems = appState.completed_problems;
+        db[reg].state.problem_times = appState.problem_times;
+        db[reg].state.current_round = appState.current_round;
+        db[reg].state.round_status = appState.round_status;
+        db[reg].state.competition_status = appState.competition_status;
+        db[reg].state.tab_switch_count = appState.tab_switch_count;
+        db[reg].state.is_suspended = appState.is_suspended;
+        db[reg].state.start_time = appState.start_time;
+        db[reg].state.remaining_seconds = appState.remaining_seconds;
+        saveDB(db);
+    }
+}
+
+function logActivity(regNo, evt) {
+    const db = getDB();
+    if (db[regNo]) {
+        db[regNo].state.activity_log = db[regNo].state.activity_log || [];
+        db[regNo].state.activity_log.push({ time: new Date().toLocaleTimeString(), event: evt });
+        saveDB(db);
+    }
+}
+
+/* ============================================================
+   UI HELPERS
+   ============================================================ */
+function showToast(msg, icon = "✨") {
+    const c = document.getElementById("global-toast-container");
+    document.getElementById("global-toast-msg").innerText = msg;
+    document.getElementById("global-toast-icon").innerText = icon;
+    c.style.display = "block";
+    setTimeout(() => { c.style.display = "none"; }, 4500);
+}
+
+function showView(viewName) {
+    localStorage.setItem("cr_active_view", viewName);
+    document.getElementById("auth-view").style.display      = viewName === "auth"      ? "flex" : "none";
+    document.getElementById("dashboard-view").style.display = viewName === "dashboard" ? "flex" : "none";
+    document.getElementById("app-header").style.display     = viewName === "workspace" ? "flex" : "none";
+    document.getElementById("app-container").style.display  = viewName === "workspace" ? "flex" : "none";
+    document.getElementById("admin-view").style.display     = viewName === "admin"     ? "block": "none";
+
+    if (viewName === "admin") {
+        renderAdminDashboard();
+        startAdminAutoRefresh();
+    } else {
+        stopAdminAutoRefresh();
+    }
+}
+
+function setBtnLoading(btn, isLoading, text = "Loading...") {
+    if (!btn) return;
+    const t = btn.querySelector(".btn-text");
+    const s = btn.querySelector(".btn-spinner");
+    btn.disabled = isLoading;
+    if (t) t.style.display = isLoading ? "none" : "inline";
+    if (s) { s.innerText = isLoading ? text : ""; s.style.display = isLoading ? "inline" : "none"; }
+}
+
+function hideAuthErrors() {
+    ["login-error-banner","register-error-banner","admin-error-banner"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+    });
+}
+
+function showLoginError(msg) {
+    const b = document.getElementById("login-error-banner");
+    if (b) { document.getElementById("login-error-text").innerText = msg; b.style.display = "flex"; }
+}
+function showRegError(msg) {
+    const b = document.getElementById("register-error-banner");
+    if (b) { document.getElementById("register-error-text").innerText = msg; b.style.display = "flex"; }
+}
+function showAdminError(msg) {
+    const b = document.getElementById("admin-error-banner");
+    if (b) { document.getElementById("admin-error-text").innerText = msg; b.style.display = "flex"; }
+}
+
+function showSecurityAlert(msg) {
+    const b = document.getElementById("security-alert-banner");
+    document.getElementById("security-alert-msg").innerText = msg;
+    b.style.display = "flex";
+}
+function hideSecurityAlert() {
+    document.getElementById("security-alert-banner").style.display = "none";
+}
+
+function setupPasswordToggle(btnId, inputId) {
+    const btn = document.getElementById(btnId);
+    const inp = document.getElementById(inputId);
+    if (!btn || !inp) return;
+    btn.addEventListener("click", () => {
+        const masked = inp.classList.contains("password-masked");
+        if (masked) { inp.classList.remove("password-masked"); btn.innerText = "🙈"; }
+        else { inp.classList.add("password-masked"); btn.innerText = "👁️"; }
+    });
+}
+
+function copySampleInput() {
+    const el = document.getElementById("prob-sample-input");
+    if (el && navigator.clipboard) navigator.clipboard.writeText(el.innerText).then(() => showToast("Sample input copied!", "📋"));
+}
+
+/* ============================================================
+   SESSION CHECK & INIT
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+    setupAuthHandlers();
+    setupMaxViewHandlers();
+    setupTabSwitchProtection();
+    setupAntiCopyProtection();
+    setupEditorHandlers();
+    setupWorkspaceHandlers();
+    checkSession();
+});
+
+function checkSession() {
+    if (isAdminLoggedIn()) { showView("admin"); return; }
+    const reg = getCurrentUserReg();
+    if (reg) {
+        const db = getDB();
+        if (db[reg]) {
+            syncCurrentUser();
+            const savedView = localStorage.getItem("cr_active_view");
+            if (appState.competition_status === "IN_PROGRESS" || savedView === "workspace") {
+                showView("workspace");
+                renderHeaderState();
+                startTimer();
+                const savedProb = parseInt(localStorage.getItem("cr_active_problem")) || appState.current_problem_id || 1;
+                loadProblem(savedProb);
+                if (appState.is_suspended) showSuspensionModal();
+            } else {
                 showView("dashboard");
                 renderDashboard();
-            });
-
-            document.getElementById("form-admin-direct-login").addEventListener("submit", (e) => {
-                e.preventDefault();
-                const u = document.getElementById("admin-user-input").value.trim();
-                const p = document.getElementById("admin-pass-input").value.trim();
-                if ((u.toLowerCase() === "admincse" || u.toLowerCase() === "admin") && (p === "AdminCSE057" || p === "123456")) {
-                    localStorage.setItem("code_relay_admin_token", "ADMIN_SESSION_TOKEN");
-                    showToast("Welcome to Admin Control Portal!", "🛡️");
-                    showView("admin");
-                } else {
-                    document.getElementById("admin-error-text").innerText = "Invalid Admin Credentials.";
-                    document.getElementById("admin-error-banner").style.display = "flex";
-                }
-            });
-
-            document.getElementById("btn-dash-logout").addEventListener("click", () => {
-                localStorage.removeItem("code_relay_current_user");
-                currentUser = null;
-                showView("auth");
-            });
-
-            document.getElementById("btn-admin-logout").addEventListener("click", () => {
-                localStorage.removeItem("code_relay_admin_token");
-                showView("auth");
-            });
-            document.getElementById("btn-admin-refresh").addEventListener("click", renderAdminDashboard);
-
-            document.getElementById("btn-start-competition").addEventListener("click", startCompetition);
-            document.getElementById("brand-logo-btn").addEventListener("click", () => {
-                showView("dashboard"); renderDashboard();
-            });
-
-            document.getElementById("btn-run-code").addEventListener("click", () => executeCode(false));
-            document.getElementById("btn-submit-code").addEventListener("click", () => executeCode(true));
-            document.getElementById("btn-reset-code").addEventListener("click", () => {
-                const editor = document.getElementById("code-editor");
-                editor.value = PROBLEMS[activeProblemId].template;
-                localStorage.removeItem("code_relay_draft_" + activeProblemId);
-            });
-
-            document.getElementById("btn-modal-continue").addEventListener("click", () => {
-                document.getElementById("celebration-modal").style.display = "none";
-                loadProblem(currentUser.state.current_problem_id);
-            });
-            document.getElementById("btn-close-admin-modal").addEventListener("click", () => {
-                document.getElementById("admin-process-modal").style.display = "none";
-            });
-
-            // Anti-cheat tab switch monitoring
-            document.addEventListener("visibilitychange", () => {
-                if (document.hidden && currentUser && currentUser.state.competition_status === "IN_PROGRESS") {
-                    handleTabViolation();
-                }
-            });
-
-            // Code Draft Auto-Save
-            const editor = document.getElementById("code-editor");
-            editor.addEventListener("input", () => {
-                if (activeProblemId) localStorage.setItem("code_relay_draft_" + activeProblemId, editor.value);
-                updateLineNumbers();
-            });
-        }
-
-        function logActivity(regNo, evt) {
-            const users = getDBUsers();
-            if (users[regNo]) {
-                users[regNo].state.activity_log.push({ time: new Date().toLocaleTimeString(), event: evt });
-                saveDBUsers(users);
             }
+            return;
         }
+    }
+    showView("auth");
+}
 
-        function handleTabViolation() {
-            if (!currentUser) return;
-            const users = getDBUsers();
-            const st = users[currentUser.register_number].state;
-            st.tab_switch_count = (st.tab_switch_count || 0) + 1;
-            if (st.tab_switch_count > 2) {
-                st.is_suspended = true;
-                st.activity_log.push({ time: new Date().toLocaleTimeString(), event: "🚨 SUSPENDED: Tab switch limit exceeded (> 2 times)" });
-            } else {
-                st.activity_log.push({ time: new Date().toLocaleTimeString(), event: `⚠️ Security Warning: Tab switch violation (${st.tab_switch_count}/2)` });
-            }
-            saveDBUsers(users);
-            currentUser.state = st;
+/* ============================================================
+   AUTH HANDLERS
+   ============================================================ */
+function setupAuthHandlers() {
+    const tabS = document.getElementById("tab-btn-student");
+    const tabA = document.getElementById("tab-btn-admin");
+    const loginBox = document.getElementById("login-box");
+    const adminBox = document.getElementById("admin-login-box");
+    const regBox   = document.getElementById("register-box");
 
-            if (st.is_suspended) {
-                showSuspensionModal();
-            } else {
-                showToast(`⚠️ Security Warning: Tab switch detected (${st.tab_switch_count}/2)`, "🛑");
-            }
+    tabS.addEventListener("click", () => {
+        tabS.className = "role-tab active"; tabA.className = "role-tab";
+        loginBox.style.display = "flex"; adminBox.style.display = "none"; regBox.style.display = "none";
+        hideAuthErrors();
+    });
+    tabA.addEventListener("click", () => {
+        tabA.className = "role-tab active admin-active"; tabS.className = "role-tab";
+        loginBox.style.display = "none"; adminBox.style.display = "flex"; regBox.style.display = "none";
+        hideAuthErrors();
+    });
+
+    document.getElementById("link-to-register").addEventListener("click", () => {
+        loginBox.style.display = "none"; regBox.style.display = "flex"; hideAuthErrors();
+    });
+    document.getElementById("link-to-login").addEventListener("click", () => {
+        regBox.style.display = "none"; loginBox.style.display = "flex"; hideAuthErrors();
+    });
+
+    setupPasswordToggle("btn-toggle-login-pwd", "login-password");
+    setupPasswordToggle("btn-toggle-reg-pwd",   "reg-password");
+    setupPasswordToggle("btn-toggle-admin-pwd", "admin-pass-input");
+
+    document.getElementById("form-login").addEventListener("submit", handleStudentLogin);
+    document.getElementById("form-register").addEventListener("submit", handleStudentRegister);
+    document.getElementById("form-admin-direct-login").addEventListener("submit", handleAdminLogin);
+    document.getElementById("btn-dash-logout").addEventListener("click", handleStudentLogout);
+    document.getElementById("btn-admin-logout").addEventListener("click", handleAdminLogout);
+    document.getElementById("btn-admin-refresh").addEventListener("click", renderAdminDashboard);
+    document.getElementById("btn-close-admin-modal").addEventListener("click", () => {
+        document.getElementById("admin-process-modal").style.display = "none";
+    });
+}
+
+function handleStudentLogin(e) {
+    e.preventDefault(); hideAuthErrors();
+    const regNo = document.getElementById("login-reg-no").value.trim().toUpperCase();
+    const pwd   = document.getElementById("login-password").value;
+    const btn   = document.getElementById("btn-login-submit");
+    if (!regNo || !pwd) { showLoginError("Please enter Register Number and Password."); return; }
+    setBtnLoading(btn, true, "Logging in...");
+    setTimeout(() => {
+        const db = getDB();
+        if (db[regNo] && db[regNo].password === pwd) {
+            localStorage.setItem("cr_current_user", regNo);
+            syncCurrentUser();
+            logActivity(regNo, "Logged into Student Portal");
+            showToast(`Welcome back, ${db[regNo].full_name}!`, "👋");
+            showView("dashboard"); renderDashboard();
+        } else {
+            showLoginError("Invalid Register Number or Password.");
         }
+        setBtnLoading(btn, false);
+    }, 400);
+}
 
-        function showSuspensionModal() {
-            document.getElementById("tab-suspended-modal").style.display = "flex";
-            document.getElementById("btn-run-code").disabled = true;
-            document.getElementById("btn-submit-code").disabled = true;
+function handleStudentRegister(e) {
+    e.preventDefault(); hideAuthErrors();
+    const name    = document.getElementById("reg-fullname").value.trim();
+    const regNo   = document.getElementById("reg-num").value.trim().toUpperCase();
+    const pwd     = document.getElementById("reg-password").value;
+    const confirm = document.getElementById("reg-confirm-password").value;
+    const btn     = document.getElementById("btn-register-submit");
 
-            // Live polling for instant unlock when admin unlocks
-            if (!suspensionInterval) {
-                suspensionInterval = setInterval(() => {
-                    const users = getDBUsers();
-                    if (currentUser && users[currentUser.register_number]) {
-                        const st = users[currentUser.register_number].state;
-                        if (!st.is_suspended) {
-                            document.getElementById("tab-suspended-modal").style.display = "none";
-                            document.getElementById("btn-run-code").disabled = false;
-                            document.getElementById("btn-submit-code").disabled = false;
-                            showToast("🔓 Admin has unlocked your session! You can continue now.", "✨");
-                            clearInterval(suspensionInterval);
-                            suspensionInterval = null;
-                        }
-                    }
-                }, 1000);
+    if (!name || !regNo || !pwd || !confirm) { showRegError("All fields are required."); return; }
+    if (pwd.length < 4) { showRegError("Password must be at least 4 characters."); return; }
+    if (pwd !== confirm) { showRegError("Passwords do not match."); return; }
+
+    const db = getDB();
+    if (db[regNo]) { showRegError("Register Number already exists. Please login."); return; }
+
+    setBtnLoading(btn, true, "Registering...");
+    setTimeout(() => {
+        db[regNo] = {
+            register_number: regNo, full_name: name, password: pwd,
+            state: {
+                current_problem_id:1, completed_problems:[], problem_times:{},
+                current_round:1, round_status:"ROUND 1 IN PROGRESS",
+                competition_status:"NOT_STARTED",
+                tab_switch_count:0, is_suspended:false, start_time:null, remaining_seconds:5400,
+                activity_log:[{time:new Date().toLocaleTimeString(), event:"Account Registered"}]
             }
+        };
+        saveDB(db);
+        localStorage.setItem("cr_current_user", regNo);
+        syncCurrentUser();
+        showToast(`Registration successful! Welcome ${name}`, "🎉");
+        showView("dashboard"); renderDashboard();
+        setBtnLoading(btn, false);
+    }, 400);
+}
+
+function handleAdminLogin(e) {
+    e.preventDefault(); hideAuthErrors();
+    const u = document.getElementById("admin-user-input").value.trim();
+    const p = document.getElementById("admin-pass-input").value.trim();
+    const btn = document.getElementById("btn-admin-submit");
+    if (!u || !p) { showAdminError("Please enter username and password."); return; }
+    setBtnLoading(btn, true, "Verifying...");
+    setTimeout(() => {
+        if (u === ADMIN_USERNAME && p === ADMIN_PASSWORD) {
+            localStorage.setItem("cr_admin_token", "ADMIN_SESSION");
+            showToast("Welcome to Admin Portal!", "🛡️");
+            showView("admin");
+        } else {
+            showAdminError("Invalid Admin credentials.");
         }
+        setBtnLoading(btn, false);
+    }, 400);
+}
 
-        function renderDashboard() {
-            if (!currentUser) return;
-            const st = currentUser.state;
-            document.getElementById("dash-greeting").innerText = `Welcome, ${currentUser.full_name}!`;
-            document.getElementById("dash-student-name").innerText = currentUser.full_name;
-            document.getElementById("dash-reg-no").innerText = currentUser.register_number;
-            document.getElementById("dash-comp-status").innerText = st.competition_status === "IN_PROGRESS" ? "In Progress" : (st.competition_status === "COMPLETED" ? "Completed" : "Ready to Start");
-            document.getElementById("dash-current-round").innerText = `Round ${st.current_round}`;
-            document.getElementById("dash-problems-solved").innerText = `${st.completed_problems.length} / 5`;
+function handleStudentLogout() {
+    logActivity(getCurrentUserReg(), "Logged out of session");
+    localStorage.removeItem("cr_current_user");
+    localStorage.removeItem("cr_active_view");
+    if (timerInterval) clearInterval(timerInterval);
+    if (suspensionCheckInterval) { clearInterval(suspensionCheckInterval); suspensionCheckInterval = null; }
+    showToast("Logged out successfully.", "👋");
+    showView("auth");
+}
 
-            const btnCta = document.getElementById("btn-start-competition");
-            if (st.competition_status === "IN_PROGRESS") {
-                btnCta.innerHTML = `<span class="cta-icon">▶️</span> Continue Competition`;
-            } else {
-                btnCta.innerHTML = `<span class="cta-icon">🚀</span> Start Competition`;
-            }
-        }
+function handleAdminLogout() {
+    localStorage.removeItem("cr_admin_token");
+    stopAdminAutoRefresh();
+    showToast("Logged out of Admin Portal.", "👋");
+    showView("auth");
+    const tabS = document.getElementById("tab-btn-student");
+    const tabA = document.getElementById("tab-btn-admin");
+    if (tabS) tabS.className = "role-tab active";
+    if (tabA) tabA.className = "role-tab";
+    document.getElementById("login-box").style.display = "flex";
+    document.getElementById("admin-login-box").style.display = "none";
+}
 
-        function startCompetition() {
-            if (!currentUser) return;
-            const users = getDBUsers();
-            const st = users[currentUser.register_number].state;
-            if (st.competition_status !== "IN_PROGRESS" && st.competition_status !== "COMPLETED") {
-                st.competition_status = "IN_PROGRESS";
-                st.start_time = Date.now();
-                st.activity_log.push({ time: new Date().toLocaleTimeString(), event: "Started Competition Arena" });
-                saveDBUsers(users);
-                currentUser.state = st;
-            }
-            showView("workspace");
-            startTimer();
-            loadProblem(parseInt(localStorage.getItem("code_relay_active_problem")) || st.current_problem_id || 1);
-        }
+/* ============================================================
+   STUDENT DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+    syncCurrentUser();
+    document.getElementById("dash-greeting").innerText = `Welcome, ${appState.user_name}!`;
+    document.getElementById("dash-student-name").innerText = appState.user_name;
+    document.getElementById("dash-reg-no").innerText = appState.register_number;
+    document.getElementById("dash-current-round").innerText = `Round ${appState.current_round}`;
+    document.getElementById("dash-problems-solved").innerText = `${appState.completed_problems.length} / 5`;
+    document.getElementById("student-tag-badge").innerText = appState.register_number;
 
-        function loadProblem(probId) {
-            activeProblemId = probId;
-            localStorage.setItem("code_relay_active_problem", probId);
-            const prob = PROBLEMS[probId];
-            if (!prob) return;
+    const badge = document.getElementById("dash-comp-status");
+    const btnCta = document.getElementById("btn-start-competition");
+    const totalRow = document.getElementById("dash-total-time-row");
 
-            document.getElementById("prob-num-badge").innerText = `PROBLEM ${prob.number}`;
-            document.getElementById("prob-title").innerText = prob.title;
-            document.getElementById("prob-difficulty").innerText = prob.difficulty;
-            document.getElementById("prob-description").innerText = prob.description;
-            document.getElementById("prob-input-format").innerText = prob.input_format;
-            document.getElementById("prob-output-format").innerText = prob.output_format;
-            document.getElementById("prob-constraints").innerText = prob.constraints;
-            document.getElementById("prob-sample-input").innerText = prob.sample_input;
-            document.getElementById("prob-sample-output").innerText = prob.sample_output;
-            document.getElementById("prob-explanation").innerText = prob.explanation;
+    if (appState.competition_status === "COMPLETED") {
+        badge.innerText = "Completed";
+        badge.style.background = "rgba(16,185,129,0.2)"; badge.style.color = "var(--accent-green)";
+        if (totalRow) totalRow.style.display = "flex";
+        if (btnCta) btnCta.innerHTML = `<span>📊</span> View Competition Results`;
+    } else if (appState.competition_status === "IN_PROGRESS") {
+        badge.innerText = "In Progress";
+        badge.style.background = "rgba(56,189,248,0.2)"; badge.style.color = "var(--accent-blue)";
+        if (totalRow) totalRow.style.display = "none";
+        if (btnCta) btnCta.innerHTML = `<span>▶️</span> Continue Competition`;
+    } else {
+        badge.innerText = "Ready to Start";
+        badge.style.background = ""; badge.style.color = "";
+        if (totalRow) totalRow.style.display = "none";
+        if (btnCta) btnCta.innerHTML = `<span>🚀</span> Start Competition`;
+    }
+}
 
-            const editor = document.getElementById("code-editor");
-            editor.value = localStorage.getItem("code_relay_draft_" + probId) || prob.template;
-            document.getElementById("custom-input-text").value = prob.sample_input;
-            document.getElementById("console-section").style.display = "none";
+/* ============================================================
+   COMPETITION START / RESUME
+   ============================================================ */
+function setupWorkspaceHandlers() {
+    document.getElementById("btn-start-competition").addEventListener("click", startCompetition);
+    document.getElementById("brand-logo-btn").addEventListener("click", () => {
+        showView("dashboard"); renderDashboard();
+    });
+    document.getElementById("btn-run-code").addEventListener("click", () => executeCode(false));
+    document.getElementById("btn-submit-code").addEventListener("click", () => executeCode(true));
+    document.getElementById("btn-reset-code").addEventListener("click", () => {
+        const prob = PROBLEMS_DB[activeProblemId];
+        if (prob) {
+            document.getElementById("code-editor").value = prob.template;
+            localStorage.removeItem("cr_draft_" + activeProblemId);
             updateLineNumbers();
-            renderSidebar();
         }
+    });
+    document.getElementById("btn-modal-continue").addEventListener("click", () => {
+        document.getElementById("celebration-modal").style.display = "none";
+        syncCurrentUser();
+        loadProblem(appState.current_problem_id);
+    });
+    const btnTimeup = document.getElementById("btn-timeup-dashboard");
+    if (btnTimeup) btnTimeup.addEventListener("click", () => {
+        document.getElementById("timeup-modal").style.display = "none";
+        showView("dashboard"); renderDashboard();
+    });
+}
 
-        function updateLineNumbers() {
-            const editor = document.getElementById("code-editor");
-            const lines = editor.value.split("\n").length;
-            let numHtml = "";
-            for (let i = 1; i <= lines; i++) numHtml += i + "<br>";
-            document.getElementById("line-numbers").innerHTML = numHtml;
-        }
+function startCompetition() {
+    syncCurrentUser();
+    if (appState.competition_status !== "IN_PROGRESS" && appState.competition_status !== "COMPLETED") {
+        appState.competition_status = "IN_PROGRESS";
+        appState.start_time = Date.now();
+        appState.remaining_seconds = 5400;
+        logActivity(appState.register_number, "Started Competition Arena (Global 90m Countdown Active)");
+    } else {
+        logActivity(appState.register_number, "Resumed active competition arena");
+    }
+    saveCurrentUser();
 
-        function renderSidebar() {
-            const nav = document.getElementById("sidebar-navigation");
-            nav.innerHTML = "";
-            const st = currentUser ? currentUser.state : { completed_problems: [], current_problem_id: 1 };
+    showView("workspace");
+    renderHeaderState();
+    startTimer();
 
-            [1, 2, 3, 4, 5].forEach(id => {
-                const prob = PROBLEMS[id];
-                const isCompleted = st.completed_problems.includes(id);
-                const isCurrent = id === st.current_problem_id;
-                const isLocked = !isCompleted && !isCurrent;
+    const savedProb = parseInt(localStorage.getItem("cr_active_problem")) || appState.current_problem_id || 1;
+    loadProblem(savedProb);
 
-                const div = document.createElement("div");
-                div.className = `nav-item ${isCurrent ? 'active' : ''} ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''}`;
-                div.innerHTML = `<div><strong>P${prob.number}: ${prob.title}</strong><div style="font-size:0.75rem;color:var(--text-muted);">Round ${prob.round}</div></div><div>${isCompleted ? '✓' : (isLocked ? '🔒' : '▶')}</div>`;
-                if (!isLocked) {
-                    div.addEventListener("click", () => loadProblem(id));
-                }
-                nav.appendChild(div);
+    if (!maxViewAccepted) {
+        document.getElementById("maxview-prompt-modal").style.display = "flex";
+    }
+}
+
+/* ============================================================
+   PROBLEM LOADING
+   ============================================================ */
+function loadProblem(probId) {
+    hideSecurityAlert();
+    const prob = PROBLEMS_DB[probId];
+    if (!prob) return;
+
+    // Check access
+    syncCurrentUser();
+    const isCompleted = appState.completed_problems.includes(probId);
+    const isCurrent   = probId === appState.current_problem_id;
+    if (!isCompleted && !isCurrent) {
+        showSecurityAlert(`Problem ${probId} is locked! Complete Problem ${appState.current_problem_id} first.`);
+        logActivity(appState.register_number, `Attempted locked Problem ${probId}`);
+        return;
+    }
+
+    activeProblemId = probId;
+    currentProblemData = prob;
+    localStorage.setItem("cr_active_problem", probId);
+
+    document.getElementById("prob-num-badge").innerText = `PROBLEM ${prob.number}`;
+    document.getElementById("prob-title").innerText = prob.title;
+    const diff = document.getElementById("prob-difficulty");
+    diff.innerText = prob.difficulty;
+    diff.className = `difficulty-badge ${prob.difficulty.toLowerCase()}`;
+    document.getElementById("prob-description").innerText = prob.description;
+    document.getElementById("prob-input-format").innerText = prob.input_format;
+    document.getElementById("prob-output-format").innerText = prob.output_format;
+    document.getElementById("prob-constraints").innerText = prob.constraints;
+    document.getElementById("prob-sample-input").innerText = prob.sample_input;
+    document.getElementById("prob-sample-output").innerText = prob.sample_output;
+    document.getElementById("prob-explanation").innerText = prob.explanation;
+
+    const editor = document.getElementById("code-editor");
+    editor.value = localStorage.getItem("cr_draft_" + probId) || prob.template;
+    document.getElementById("custom-input-text").value = prob.sample_input;
+    document.getElementById("console-section").style.display = "none";
+    document.getElementById("unlock-toast").style.display = "none";
+    updateLineNumbers();
+    renderSidebar();
+}
+
+function renderSidebar() {
+    syncCurrentUser();
+    const nav = document.getElementById("sidebar-navigation");
+    nav.innerHTML = "";
+
+    [1, 2].forEach(round => {
+        const probs = ALL_PROBLEMS_META.filter(p => p.round === round);
+        const grp = document.createElement("div");
+        grp.className = "sidebar-round-group";
+        const hdr = document.createElement("div");
+        hdr.className = "round-header-banner";
+        const isUnlocked = appState.current_round >= round;
+        hdr.innerHTML = `<span>ROUND ${round}</span> ${isUnlocked ? '<span class="round-unlocked-badge">UNLOCKED</span>' : '🔒'}`;
+        grp.appendChild(hdr);
+
+        probs.forEach(p => {
+            const isCompleted = appState.completed_problems.includes(p.id);
+            const isCurrent   = p.id === appState.current_problem_id;
+            const isLocked    = !isCompleted && !isCurrent;
+            const item = document.createElement("div");
+            item.className = `sidebar-problem-item${isCompleted ? " completed" : ""}${isCurrent ? " unlocked active" : ""}${isLocked ? " locked" : ""}`;
+            if (p.id === activeProblemId && !isLocked) item.classList.add("active");
+
+            let icon = "🔒", statusText = "Locked", statusClass = "status-locked";
+            if (isCompleted) {
+                icon = "✓";
+                const t = appState.problem_times[p.id] || appState.problem_times[String(p.id)];
+                statusText = t ? `Accepted (${t})` : "Accepted";
+                statusClass = "status-completed";
+            } else if (isCurrent) {
+                icon = "🔓"; statusText = "Unlocked"; statusClass = "status-unlocked";
+            }
+
+            item.innerHTML = `
+                <div class="item-status-icon">${icon}</div>
+                <div class="item-details">
+                    <div class="item-title">Problem ${p.number}: ${p.title}</div>
+                    <div class="item-status-label ${statusClass}">${statusText}</div>
+                </div>`;
+            item.addEventListener("click", () => {
+                if (isLocked) { showSecurityAlert(`Problem ${p.number} is locked! Solve Problem ${appState.current_problem_id} first.`); }
+                else { loadProblem(p.id); }
             });
+            grp.appendChild(item);
+        });
+        nav.appendChild(grp);
+    });
+}
+
+/* ============================================================
+   CODE EDITOR HELPERS
+   ============================================================ */
+function setupEditorHandlers() {
+    const editor = document.getElementById("code-editor");
+    editor.addEventListener("input", () => {
+        updateLineNumbers();
+        if (activeProblemId) localStorage.setItem("cr_draft_" + activeProblemId, editor.value);
+    });
+    editor.addEventListener("keydown", (e) => {
+        if (e.key === "Tab") {
+            e.preventDefault();
+            const s = editor.selectionStart, end = editor.selectionEnd;
+            editor.value = editor.value.substring(0,s) + "    " + editor.value.substring(end);
+            editor.selectionStart = editor.selectionEnd = s + 4;
+            updateLineNumbers();
         }
+    });
+}
 
-        function executeCode(isSubmission) {
-            const prob = PROBLEMS[activeProblemId];
-            const inp = isSubmission ? prob.sample_input : document.getElementById("custom-input-text").value;
-            const userOutput = prob.solve(inp);
-            const isAccepted = isSubmission ? (userOutput === prob.sample_output.trim()) : true;
+function updateLineNumbers() {
+    const editor = document.getElementById("code-editor");
+    const lines = editor.value.split("\n").length;
+    document.getElementById("line-numbers").innerHTML = Array.from({length:lines}, (_,i) => i+1).join("<br>");
+}
 
-            const consoleSec = document.getElementById("console-section");
-            consoleSec.style.display = "flex";
-            const banner = document.getElementById("verdict-banner");
-            const tag = document.getElementById("verdict-tag");
-
-            if (isAccepted) {
-                banner.className = "verdict-banner verdict-accepted";
-                tag.innerText = isSubmission ? "Verdict: Accepted" : "Execution Success";
-                document.getElementById("console-stdout").innerText = `Output:\n${userOutput}\n\n✓ All Test Cases Passed!`;
-                document.getElementById("console-stderr").innerText = "";
-
-                if (isSubmission && currentUser) {
-                    const users = getDBUsers();
-                    const st = users[currentUser.register_number].state;
-                    if (!st.completed_problems.includes(activeProblemId)) {
-                        st.completed_problems.push(activeProblemId);
-                        st.activity_log.push({ time: new Date().toLocaleTimeString(), event: `Submitted Problem ${activeProblemId} - Accepted!` });
-                        if (activeProblemId < 5) st.current_problem_id = activeProblemId + 1;
-                        if (st.completed_problems.length === 3) st.current_round = 2;
-                        if (st.completed_problems.length === 5) st.competition_status = "COMPLETED";
-                        saveDBUsers(users);
-                        currentUser.state = st;
-
-                        setTimeout(() => {
-                            document.getElementById("modal-title").innerText = activeProblemId === 5 ? "🏆 CHAMPION! All Problems Solved!" : `Problem ${activeProblemId} Solved!`;
-                            document.getElementById("modal-message").innerText = `Great job! Problem ${activeProblemId} completed successfully.`;
-                            document.getElementById("celebration-modal").style.display = "flex";
-                        }, 500);
-                    }
-                }
-            } else {
-                banner.className = "verdict-banner verdict-wrong";
-                tag.innerText = "Verdict: Wrong Answer";
-                document.getElementById("console-stdout").innerText = `Output:\n${userOutput}\nExpected:\n${prob.sample_output}`;
-                document.getElementById("console-stderr").innerText = "";
-            }
-        }
-
-        function startTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                const timerDisplay = document.getElementById("timer-display");
-                if (timerDisplay) {
-                    const now = Date.now();
-                    const start = currentUser ? currentUser.state.start_time || now : now;
-                    const elapsed = Math.floor((now - start) / 1000);
-                    const rem = Math.max(0, 5400 - elapsed);
-                    const m = Math.floor(rem / 60);
-                    const s = rem % 60;
-                    timerDisplay.innerText = `${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
-                }
-            }, 1000);
-        }
-
-        // Admin Portal Renderer
-        function renderAdminDashboard() {
-            const users = getDBUsers();
-            const list = Object.values(users);
-
-            document.getElementById("stat-total-students").innerText = list.length;
-            document.getElementById("stat-active-students").innerText = list.filter(u => u.state.competition_status === "IN_PROGRESS").length;
-            document.getElementById("stat-completed-students").innerText = list.filter(u => u.state.completed_problems.length === 5).length;
-
-            const tbody = document.getElementById("admin-students-tbody");
-            tbody.innerHTML = "";
-
-            if (list.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--text-muted);">No registered students yet.</td></tr>';
-                return;
-            }
-
-            list.forEach(u => {
-                const st = u.state;
-                const tr = document.createElement("tr");
-                const latestEvt = st.activity_log.length > 0 ? st.activity_log[st.activity_log.length - 1].event : "No activity";
-                const unlockBtn = st.is_suspended ? `<button class="btn btn-primary btn-xs" onclick="adminUnlock('${u.register_number}')" style="background:var(--accent-green);">🔓 UNLOCK</button>` : "";
-
-                tr.innerHTML = `
-                    <td><code>${u.register_number}</code></td>
-                    <td>${u.full_name}</td>
-                    <td><span class="status-badge ${st.is_suspended ? 'status-locked' : ''}">${st.is_suspended ? 'SUSPENDED' : st.competition_status}</span></td>
-                    <td>Round ${st.current_round}</td>
-                    <td>Problem ${st.current_problem_id}</td>
-                    <td>${st.completed_problems.length} / 5</td>
-                    <td>90m Timer</td>
-                    <td>${st.tab_switch_count > 0 ? '⚠️ ' + st.tab_switch_count : '0 Clean'}</td>
-                    <td style="font-size:0.8rem;">${latestEvt}</td>
-                    <td>${unlockBtn} <button class="btn btn-secondary btn-xs" onclick="adminAudit('${u.register_number}')">🔍 Audit</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        window.adminUnlock = function(regNo) {
-            const users = getDBUsers();
-            if (users[regNo]) {
-                users[regNo].state.is_suspended = false;
-                users[regNo].state.tab_switch_count = 0;
-                users[regNo].state.activity_log.push({ time: new Date().toLocaleTimeString(), event: "🔓 Admin unlocked student session" });
-                saveDBUsers(users);
-                showToast(`Student ${regNo} unlocked!`, "🔓");
-                renderAdminDashboard();
-            }
+function setupAntiCopyProtection() {
+    const editor = document.getElementById("code-editor");
+    const inputArea = document.getElementById("custom-input-text");
+    [editor, inputArea].forEach(el => {
+        if (!el) return;
+        const block = (e, msg) => {
+            e.preventDefault();
+            showToast(`⚠️ ${msg} is disabled during the competition!`, "🛑");
         };
+        el.addEventListener("paste", e => block(e, "Pasting Code"));
+        el.addEventListener("copy",  e => block(e, "Copying Code"));
+        el.addEventListener("cut",   e => block(e, "Cutting Text"));
+        el.addEventListener("drop",  e => block(e, "Drag & Drop"));
+        el.addEventListener("contextmenu", e => block(e, "Right Click"));
+        el.addEventListener("keydown", e => {
+            const k = (e.key || "").toLowerCase();
+            if ((e.ctrlKey || e.metaKey) && (k === 'v' || k === 'c' || k === 'x')) {
+                e.preventDefault();
+                showToast(`⚠️ Ctrl/Cmd+${k.toUpperCase()} is disabled!`, "🛑");
+            }
+        });
+    });
+}
 
-        window.adminAudit = function(regNo) {
-            const users = getDBUsers();
-            const u = users[regNo];
-            if (!u) return;
-            document.getElementById("audit-student-name").innerText = u.full_name;
-            document.getElementById("audit-reg-num").innerText = u.register_number;
-            const logList = document.getElementById("audit-log-list");
-            logList.innerHTML = "";
-            u.state.activity_log.slice().reverse().forEach(log => {
-                const div = document.createElement("div");
-                div.style.cssText = "padding:0.4rem 0;border-bottom:1px solid var(--border-color);font-size:0.85rem;";
-                div.innerHTML = `<span style="color:var(--text-muted);margin-right:0.5rem;">[${log.time}]</span><span>${log.event}</span>`;
-                logList.appendChild(div);
-            });
-            document.getElementById("admin-process-modal").style.display = "flex";
-        };
+/* ============================================================
+   CODE EXECUTION (Client-side C Evaluator)
+   ============================================================ */
+function executeCode(isSubmission) {
+    if (!currentProblemData) return;
+    const prob = currentProblemData;
+    const inputEl = document.getElementById("custom-input-text");
+    const inp = isSubmission ? prob.sample_input : (inputEl.value || prob.sample_input);
+
+    let output, correct;
+    try {
+        output = prob.evaluate(inp);
+        correct = isSubmission ? (output.trim() === prob.sample_output.trim()) : true;
+    } catch(e) {
+        output = "Error evaluating";
+        correct = false;
+    }
+
+    const consoleSec = document.getElementById("console-section");
+    consoleSec.style.display = "flex";
+    const banner = document.getElementById("verdict-banner");
+    const tag    = document.getElementById("verdict-tag");
+    const timeEl = document.getElementById("exec-time");
+
+    timeEl.innerText = "Execution Time: 0.01 seconds";
+    banner.className = "verdict-banner";
+
+    if (correct) {
+        banner.classList.add("verdict-accepted");
+        tag.innerText = isSubmission ? "Verdict: Accepted" : "Execution Success (C Program Valid)";
+        document.getElementById("console-stdout").innerText = isSubmission
+            ? `Output:\n${output}\n\n✓ All test cases passed!`
+            : `Output:\n${output}`;
+        document.getElementById("console-stderr").innerText = "";
+
+        if (isSubmission) handleAcceptedSubmission(prob.id);
+    } else {
+        banner.classList.add("verdict-wrong");
+        tag.innerText = "Verdict: Wrong Answer";
+        document.getElementById("console-stdout").innerText = `Your Output:\n${output}\n\nExpected Output:\n${prob.sample_output}`;
+        document.getElementById("console-stderr").innerText = "";
+    }
+    consoleSec.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function handleAcceptedSubmission(probId) {
+    syncCurrentUser();
+    if (appState.completed_problems.includes(probId)) return;
+
+    const startSec = appState.start_time ? appState.start_time / 1000 : Date.now() / 1000;
+    const elapsed  = Math.round(Date.now() / 1000 - startSec);
+    const mins     = Math.floor(elapsed / 60);
+    const secs     = elapsed % 60;
+    const timeStr  = `${String(mins).padStart(2,'0')}m ${String(secs).padStart(2,'0')}s`;
+
+    appState.completed_problems.push(probId);
+    appState.problem_times[probId] = timeStr;
+    logActivity(appState.register_number, `Submitted Problem ${probId} - Accepted! (${timeStr})`);
+
+    if (probId < 5) {
+        appState.current_problem_id = probId + 1;
+        const unlockToast = document.getElementById("unlock-toast");
+        const unlockContent = document.getElementById("unlock-toast-content");
+        if (probId === 3) {
+            appState.current_round = 2;
+            appState.round_status = "ROUND 2 IN PROGRESS";
+            unlockContent.innerText = "🎉 Round 1 Complete! Round 2 is now unlocked!\nNext: Problem 4 - Find the Missing Number";
+        } else {
+            const next = PROBLEMS_DB[probId + 1];
+            unlockContent.innerText = `✅ Problem ${probId} Accepted! Problem ${probId+1}: ${next.title} is now unlocked!`;
+        }
+        unlockToast.style.display = "flex";
+    }
+
+    if (appState.completed_problems.length === 5) {
+        appState.competition_status = "COMPLETED";
+        appState.round_status = "COMPETITION COMPLETED";
+    }
+    saveCurrentUser();
+
+    setTimeout(() => {
+        const title = probId === 5 ? "🏆 COMPETITION COMPLETED!" : `Problem ${probId} Solved!`;
+        const probTimes = Object.entries(appState.problem_times)
+            .map(([k,v]) => `✓ P${k} (${PROBLEMS_DB[k] ? PROBLEMS_DB[k].title : ''}) : ${v}`)
+            .join('\n');
+        const msg = probId === 5
+            ? `Congratulations! You solved all 5 problems!\n\nPer-Problem Times:\n${probTimes}`
+            : `Great job! Problem ${probId} completed.\n\nNext up: Problem ${probId+1} is now unlocked!`;
+        document.getElementById("modal-title").innerText = title;
+        document.getElementById("modal-message").innerText = msg;
+        document.getElementById("celebration-modal").style.display = "flex";
+    }, 600);
+
+    renderSidebar();
+    renderHeaderState();
+}
+
+/* ============================================================
+   TIMER
+   ============================================================ */
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        if (appState.competition_status !== "IN_PROGRESS") return;
+        if (appState.remaining_seconds > 0) {
+            appState.remaining_seconds -= 1;
+            appState.elapsed_seconds   = (appState.elapsed_seconds || 0) + 1;
+            renderTimer();
+            if (appState.remaining_seconds % 30 === 0) saveCurrentUser();
+        } else {
+            handleTimeUp();
+        }
+
+        // Check suspension status every 1.5s
+        if (appState.is_suspended) checkLiveSuspensionState();
+    }, 1000);
+}
+
+function renderTimer() {
+    const rem  = Math.max(0, appState.remaining_seconds);
+    const hrs  = Math.floor(rem / 3600);
+    const mins = Math.floor((rem % 3600) / 60);
+    const secs = Math.floor(rem % 60);
+    const formatted = hrs > 0
+        ? `${String(hrs).padStart(2,'0')}h ${String(mins).padStart(2,'0')}m ${String(secs).padStart(2,'0')}s`
+        : `${String(mins).padStart(2,'0')}m ${String(secs).padStart(2,'0')}s`;
+    const el = document.getElementById("timer-display");
+    if (el) {
+        el.innerText = formatted;
+        el.style.color = rem < 300 ? "var(--accent-rose)" : "#e2e8f0";
+    }
+}
+
+function renderHeaderState() {
+    const el = document.getElementById("header-round-text");
+    if (el) el.innerText = appState.round_status;
+    const tagBadge = document.getElementById("student-tag-badge");
+    if (tagBadge) tagBadge.innerText = appState.register_number;
+    renderTimer();
+}
+
+function handleTimeUp() {
+    if (timerInterval) clearInterval(timerInterval);
+    appState.competition_status = "COMPLETED";
+    appState.round_status       = "TIME UP - COMPLETED";
+    saveCurrentUser();
+    const btnRun    = document.getElementById("btn-run-code");
+    const btnSubmit = document.getElementById("btn-submit-code");
+    if (btnRun) btnRun.disabled = true;
+    if (btnSubmit) btnSubmit.disabled = true;
+    document.getElementById("timeup-modal").style.display = "flex";
+    logActivity(appState.register_number, "90-Minute Global Competition Limit Expired - Competition Ended.");
+}
+
+/* ============================================================
+   ANTI-CHEAT: TAB SWITCH PROTECTION
+   ============================================================ */
+function setupTabSwitchProtection() {
+    let lastTime = 0;
+    const handle = () => {
+        if (appState.competition_status !== "IN_PROGRESS") return;
+        const now = Date.now();
+        if (now - lastTime < 1500) return;
+        lastTime = now;
+
+        syncCurrentUser();
+        appState.tab_switch_count = (appState.tab_switch_count || 0) + 1;
+
+        if (appState.tab_switch_count > 2) {
+            appState.is_suspended = true;
+            logActivity(appState.register_number, `🚨 SUSPENDED: Tab switch limit exceeded (> 2 times)`);
+            saveCurrentUser();
+            showSuspensionModal();
+        } else {
+            logActivity(appState.register_number, `⚠️ Tab switch warning ${appState.tab_switch_count}/2`);
+            saveCurrentUser();
+            showToast(`⚠️ Warning ${appState.tab_switch_count}/2: Tab switch detected!`, "🛑");
+        }
+    };
+    document.addEventListener("visibilitychange", () => { if (document.hidden) handle(); });
+    window.addEventListener("blur", handle);
+}
+
+/* ============================================================
+   SUSPENSION MODAL & LIVE UNLOCK POLLING
+   ============================================================ */
+function showSuspensionModal() {
+    document.getElementById("tab-suspended-modal").style.display = "flex";
+    const btnR = document.getElementById("btn-run-code");
+    const btnS = document.getElementById("btn-submit-code");
+    if (btnR) btnR.disabled = true;
+    if (btnS) btnS.disabled = true;
+
+    if (!suspensionCheckInterval) {
+        suspensionCheckInterval = setInterval(checkLiveSuspensionState, 1000);
+    }
+}
+
+function checkLiveSuspensionState() {
+    const reg = getCurrentUserReg();
+    if (!reg) return;
+    const db  = getDB();
+    if (!db[reg]) return;
+    const wasSuspended = appState.is_suspended;
+    appState.is_suspended     = db[reg].state.is_suspended;
+    appState.tab_switch_count = db[reg].state.tab_switch_count;
+
+    if (wasSuspended && !appState.is_suspended) {
+        document.getElementById("tab-suspended-modal").style.display = "none";
+        const btnR = document.getElementById("btn-run-code");
+        const btnS = document.getElementById("btn-submit-code");
+        if (btnR) btnR.disabled = false;
+        if (btnS) btnS.disabled = false;
+        showToast("🔓 Admin unlocked your session! You can continue now.", "✨");
+        logActivity(reg, "Resumed coding session after Admin unlock");
+        if (suspensionCheckInterval) { clearInterval(suspensionCheckInterval); suspensionCheckInterval = null; }
+    }
+}
+
+/* ============================================================
+   MAX VIEW HANDLERS
+   ============================================================ */
+function setupMaxViewHandlers() {
+    const promptModal    = document.getElementById("maxview-prompt-modal");
+    const blockedOverlay = document.getElementById("maxview-blocked-overlay");
+    const btnAccept      = document.getElementById("btn-accept-maxview");
+    const btnDecline     = document.getElementById("btn-decline-maxview");
+    const btnRestore     = document.getElementById("btn-restore-maxview");
+
+    const requestMaxView = async () => {
+        try {
+            if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+            else if (document.documentElement.webkitRequestFullscreen) await document.documentElement.webkitRequestFullscreen();
+        } catch(err) {}
+        maxViewAccepted = true;
+        promptModal.style.display = "none";
+        blockedOverlay.style.display = "none";
+    };
+
+    btnAccept.addEventListener("click", requestMaxView);
+    btnRestore.addEventListener("click", requestMaxView);
+    btnDecline.addEventListener("click", () => {
+        maxViewAccepted = false;
+        promptModal.style.display = "none";
+        blockedOverlay.style.display = "flex";
+    });
+
+    const monitor = () => {
+        if (!maxViewAccepted) return;
+        const isFS = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        const isMax = (window.innerWidth >= screen.availWidth * 0.90) && (window.innerHeight >= screen.availHeight * 0.85);
+        const workspace = document.getElementById("app-container");
+        if (!isFS && !isMax && workspace && workspace.style.display !== "none") {
+            blockedOverlay.style.display = "flex";
+        } else {
+            blockedOverlay.style.display = "none";
+        }
+    };
+    document.addEventListener("fullscreenchange", monitor);
+    document.addEventListener("webkitfullscreenchange", monitor);
+    window.addEventListener("resize", monitor);
+}
+
+/* ============================================================
+   ADMIN DASHBOARD
+   ============================================================ */
+function renderAdminDashboard() {
+    const db   = getDB();
+    const list = Object.values(db);
+    allAdminStudents = list.map(u => ({
+        register_number:   u.register_number,
+        full_name:         u.full_name,
+        competition_status:u.state.competition_status,
+        current_round:     u.state.current_round,
+        current_problem_id:u.state.current_problem_id,
+        completed_problems:u.state.completed_problems,
+        problem_times:     u.state.problem_times,
+        tab_switch_count:  u.state.tab_switch_count,
+        is_suspended:      u.state.is_suspended,
+        start_time:        u.state.start_time,
+        activity_log:      u.state.activity_log || []
+    }));
+
+    document.getElementById("stat-total-students").innerText     = allAdminStudents.length;
+    document.getElementById("stat-active-students").innerText    = allAdminStudents.filter(s => s.competition_status === "IN_PROGRESS").length;
+    document.getElementById("stat-completed-students").innerText = allAdminStudents.filter(s => s.completed_problems.length === 5).length;
+
+    const tbody = document.getElementById("admin-students-tbody");
+    tbody.innerHTML = "";
+
+    if (allAdminStudents.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--text-muted);">No students registered yet.</td></tr>';
+        return;
+    }
+
+    allAdminStudents.forEach(st => {
+        const tr = document.createElement("tr");
+        let statusClass = "status-badge", statusText = st.competition_status;
+        if (st.is_suspended) { statusText = "SUSPENDED"; statusClass += " status-locked"; }
+        else if (st.competition_status === "COMPLETED") { statusText = "Completed"; statusClass += " status-completed"; }
+        else if (st.competition_status === "IN_PROGRESS") { statusText = "In Progress"; statusClass += " status-unlocked"; }
+        else { statusText = "Not Started"; }
+
+        const completedStr = st.completed_problems.length > 0
+            ? st.completed_problems.map(p => {
+                const t = (st.problem_times && (st.problem_times[p] || st.problem_times[String(p)])) || "";
+                return t ? `✓ P${p}(${t})` : `✓ P${p}`;
+              }).join(", ")
+            : "None";
+
+        let tabHtml = '<span style="color:var(--accent-green);">0 Clean</span>';
+        if (st.is_suspended) tabHtml = `<span class="status-badge status-locked">🚨 ${st.tab_switch_count} (SUSPENDED)</span>`;
+        else if (st.tab_switch_count > 0) tabHtml = `<span class="status-badge" style="background:rgba(245,158,11,0.2);color:var(--accent-amber);">⚠️ ${st.tab_switch_count}/2</span>`;
+
+        let unlockBtn = "";
+        if (st.is_suspended) unlockBtn = `<button class="btn btn-primary btn-xs" onclick="adminUnlock('${st.register_number}')" style="background:var(--accent-green);border-color:var(--accent-green);font-weight:700;">🔓 UNLOCK</button>`;
+
+        let timeLeft = "—";
+        if (st.start_time && st.competition_status === "IN_PROGRESS") {
+            const elapsed = (Date.now() - st.start_time) / 1000;
+            const rem = Math.max(0, 5400 - elapsed);
+            const m = Math.floor(rem / 60), s = Math.floor(rem % 60);
+            timeLeft = `${m}m ${s}s`;
+        } else if (st.competition_status === "COMPLETED") timeLeft = "Done";
+
+        const latestAction = st.activity_log.length > 0 ? st.activity_log[st.activity_log.length-1].event : "No activity";
+
+        tr.innerHTML = `
+            <td><code>${st.register_number}</code></td>
+            <td>${st.full_name}</td>
+            <td><span class="${statusClass}">${statusText}</span></td>
+            <td>Round ${st.current_round || 1}</td>
+            <td>Problem ${st.current_problem_id || 1}</td>
+            <td style="font-size:0.8rem;max-width:200px;">${completedStr}</td>
+            <td>${timeLeft}</td>
+            <td>${tabHtml}</td>
+            <td style="font-size:0.8rem;max-width:180px;">${latestAction}</td>
+            <td style="white-space:nowrap;">${unlockBtn} <button class="btn btn-secondary btn-xs" onclick="adminAudit('${st.register_number}')">🔍 Audit</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+window.adminUnlock = function(regNo) {
+    const db = getDB();
+    if (db[regNo]) {
+        db[regNo].state.is_suspended   = false;
+        db[regNo].state.tab_switch_count = 0;
+        db[regNo].state.activity_log.push({time:new Date().toLocaleTimeString(), event:"🔓 Admin unlocked student session"});
+        saveDB(db);
+        showToast(`Student ${regNo} unlocked!`, "🔓");
+        renderAdminDashboard();
+    }
+};
+
+window.adminAudit = function(regNo) {
+    const db = getDB();
+    const u  = db[regNo];
+    if (!u) return;
+    document.getElementById("audit-student-name").innerText = u.full_name;
+    document.getElementById("audit-reg-num").innerText = u.register_number;
+    const logList = document.getElementById("audit-log-list");
+    logList.innerHTML = "";
+    const logs = u.state.activity_log || [];
+    if (logs.length === 0) {
+        logList.innerHTML = '<p style="color:var(--text-muted);text-align:center;">No activity logged yet.</p>';
+    } else {
+        logs.slice().reverse().forEach(entry => {
+            const div = document.createElement("div");
+            div.style.cssText = "padding:0.4rem 0;border-bottom:1px solid #1e293b;";
+            div.innerHTML = `<span style="color:var(--accent-blue);margin-right:0.5rem;">[${entry.time || ""}]</span><span>${entry.event}</span>`;
+            logList.appendChild(div);
+        });
+    }
+    document.getElementById("admin-process-modal").style.display = "flex";
+};
+
+function startAdminAutoRefresh() {
+    stopAdminAutoRefresh();
+    adminRefreshInterval = setInterval(renderAdminDashboard, 3000);
+}
+function stopAdminAutoRefresh() {
+    if (adminRefreshInterval) { clearInterval(adminRefreshInterval); adminRefreshInterval = null; }
+}
     </script>
 </body>
 </html>
