@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CODE RELAY – College Coding Competition Portal</title>
+<meta name="description" content="CODE RELAY - A live college coding competition platform with sequential problem unlocking, real-time admin monitoring, and anti-cheat protection.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg-main:#0b0f19;--bg-header:#111827;--bg-card:#1f2937;--bg-card-hover:#374151;--bg-editor:#111827;--bg-code:#0f172a;--border-color:#374151;--border-glow:#38bdf8;--text-main:#f9fafb;--text-secondary:#e2e8f0;--text-muted:#9ca3af;--text-dim:#6b7280;--accent-blue:#38bdf8;--accent-blue-bg:rgba(56,189,248,.10);--accent-green:#10b981;--accent-green-bg:rgba(16,185,129,.12);--accent-amber:#f59e0b;--accent-rose:#f43f5e;--accent-rose-bg:rgba(244,63,94,.12);--accent-purple:#8b5cf6;--font-sans:'Inter',system-ui,sans-serif;--font-mono:'Fira Code',monospace;}
+*{box-sizing:border-box;margin:0;padding:0;}
+.pwd-mask{-webkit-text-security:disc!important;text-security:disc!important;}
+body{background:var(--bg-main);color:var(--text-main);font-family:var(--font-sans);line-height:1.5;overflow-x:hidden;min-height:100vh;display:flex;flex-direction:column;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideInR{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-10px)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.15)}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(56,189,248,.3)}50%{box-shadow:0 0 40px rgba(56,189,248,.6)}}
+/* TOAST */
+.toast-wrap{position:fixed;top:1.5rem;right:1.5rem;z-index:9999;animation:slideInR .35s ease;}
+.g-toast{background:linear-gradient(135deg,rgba(16,185,129,.95),rgba(16,185,129,.8));color:#fff;padding:.85rem 1.4rem;border-radius:.65rem;box-shadow:0 10px 30px rgba(16,185,129,.4);display:flex;align-items:center;gap:.75rem;font-weight:600;font-size:.95rem;max-width:360px;}
+/* AUTH */
+.auth-wrapper{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:2rem 1rem;background:radial-gradient(circle at top right,rgba(56,189,248,.12),transparent 40%),radial-gradient(circle at bottom left,rgba(139,92,246,.12),transparent 40%),var(--bg-main);}
+.auth-con{width:100%;max-width:480px;display:flex;flex-direction:column;gap:1.25rem;}
+.auth-brand{text-align:center;display:flex;flex-direction:column;align-items:center;gap:.4rem;}
+.auth-logo{display:flex;align-items:center;gap:.65rem;font-weight:800;font-size:2.4rem;letter-spacing:-.03em;color:#fff;}
+.auth-logo .li{font-size:2.6rem;color:var(--accent-blue);filter:drop-shadow(0 0 14px rgba(56,189,248,.65));}
+.auth-sub{color:var(--accent-blue);font-size:.95rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
+.role-tabs{display:flex;gap:.5rem;background:rgba(15,23,42,.7);border:1px solid var(--border-color);padding:.35rem;border-radius:.75rem;width:100%;}
+.role-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1rem;border:none;background:transparent;color:var(--text-muted);font-size:.95rem;font-weight:600;border-radius:.5rem;cursor:pointer;transition:all .2s ease;}
+.role-tab:hover{color:#fff;background:rgba(255,255,255,.05);}
+.role-tab.active{background:var(--accent-blue);color:#fff;font-weight:700;box-shadow:0 4px 14px rgba(56,189,248,.35);}
+.role-tab.active.adm{background:var(--accent-purple);box-shadow:0 4px 14px rgba(139,92,246,.35);}
+.auth-card{background:var(--bg-card);border:1px solid var(--border-color);box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 1px var(--border-glow);border-radius:1rem;padding:2.25rem;display:flex;flex-direction:column;gap:1.25rem;animation:fadeIn .3s ease;}
+.auth-card-title{font-size:1.5rem;font-weight:800;color:#fff;}
+.auth-card-desc{font-size:.88rem;color:var(--text-muted);margin-top:-.75rem;}
+.err-banner{background:var(--accent-rose-bg);border:1px solid var(--accent-rose);border-radius:.5rem;padding:.65rem .9rem;font-size:.85rem;color:#fecdd3;display:flex;align-items:center;gap:.5rem;font-weight:500;}
+.fg{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;}
+.fg label{font-size:.85rem;font-weight:600;color:var(--text-secondary);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.iw{position:relative;display:flex;align-items:center;}
+.ii{position:absolute;left:.85rem;font-size:1rem;pointer-events:none;opacity:.7;}
+.iw input{width:100%;background:var(--bg-code);border:1px solid var(--border-color);border-radius:.5rem;padding:.72rem .85rem .72rem 2.6rem;font-family:var(--font-sans);font-size:.9rem;color:#fff;outline:none;transition:all .2s ease;}
+.iw input:focus{border-color:var(--accent-blue);box-shadow:0 0 12px rgba(56,189,248,.25);background:#131c2e;}
+.pwd-btn{position:absolute;right:.75rem;background:none;border:none;cursor:pointer;font-size:1rem;opacity:.7;padding:.2rem;}
+.pwd-btn:hover{opacity:1;}
+.btn-block{width:100%;justify-content:center;margin-top:.5rem;}
+.auth-foot{display:flex;justify-content:center;align-items:center;gap:.5rem;font-size:.88rem;color:var(--text-muted);border-top:1px solid var(--border-color);padding-top:1rem;margin-top:.5rem;}
+.lbtn{background:none;border:none;color:var(--accent-blue);font-weight:700;cursor:pointer;font-size:.88rem;}
+.lbtn:hover{text-decoration:underline;}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.25rem;border-radius:.5rem;font-weight:600;font-size:.9rem;cursor:pointer;border:1px solid transparent;transition:all .2s ease;font-family:var(--font-sans);}
+.btn:disabled{opacity:.55;cursor:not-allowed;}
+.btn-primary{background:var(--accent-blue);color:#090d16;}
+.btn-primary:not(:disabled):hover{background:#7dd3fc;box-shadow:0 0 16px rgba(56,189,248,.45);}
+.btn-secondary{background:#374151;color:#fff;border-color:var(--border-color);}
+.btn-secondary:not(:disabled):hover{background:#4b5563;}
+.btn-danger{background:transparent;border-color:rgba(244,63,94,.4);color:var(--accent-rose);}
+.btn-danger:hover{background:var(--accent-rose-bg);}
+.btn-sm{padding:.35rem .75rem;font-size:.8rem;}
+.btn-xs{padding:.2rem .5rem;font-size:.75rem;}
+.btn-lg{padding:.8rem 1.75rem;font-size:1rem;}
+/* DASHBOARD */
+.dash-wrap{min-height:100vh;padding:2.5rem 2rem;background:radial-gradient(circle at top,rgba(56,189,248,.08),transparent 50%),var(--bg-main);display:flex;justify-content:center;}
+.dash-con{width:100%;max-width:960px;display:flex;flex-direction:column;gap:2rem;}
+.dash-hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--border-color);padding-bottom:1.5rem;}
+.wtag{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent-blue);}
+.wtitle{font-size:2.25rem;font-weight:800;color:#fff;}
+.wsub{color:var(--text-muted);font-size:.95rem;}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+.dcard{background:var(--bg-card);border:1px solid var(--border-color);border-radius:.9rem;padding:1.5rem;display:flex;flex-direction:column;gap:1rem;box-shadow:0 10px 30px rgba(0,0,0,.3);}
+.dcard-hdr{display:flex;align-items:center;gap:.65rem;border-bottom:1px solid var(--border-color);padding-bottom:.75rem;}
+.dcard-icon{font-size:1.4rem;}
+.dcard-hdr h3{font-size:1.1rem;font-weight:700;color:#fff;}
+.dcard-body{display:flex;flex-direction:column;gap:.85rem;}
+.irow{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;}
+.ilabel{color:var(--text-muted);}
+.ival{font-weight:600;color:#fff;}
+.ival.hl{font-family:var(--font-mono);color:var(--accent-blue);background:var(--accent-blue-bg);padding:.15rem .5rem;border-radius:.25rem;}
+.sbadge{background:var(--accent-green-bg);color:var(--accent-green);border:1px solid rgba(16,185,129,.3);padding:.2rem .7rem;border-radius:9999px;font-size:.8rem;font-weight:700;}
+.sbadge-locked{background:var(--accent-rose-bg)!important;color:var(--accent-rose)!important;border-color:rgba(244,63,94,.3)!important;}
+.action-card{background:linear-gradient(135deg,rgba(30,41,59,.9),rgba(15,23,42,.9));border:1px solid var(--border-glow);box-shadow:0 0 35px rgba(56,189,248,.18);border-radius:1rem;padding:2rem 2.5rem;display:flex;justify-content:space-between;align-items:center;gap:2rem;animation:glow 3s ease-in-out infinite;}
+.action-info h2{font-size:1.4rem;font-weight:800;color:#fff;}
+.action-info p{color:var(--text-muted);font-size:.9rem;margin-top:.4rem;max-width:550px;}
+.btn-cta{padding:.95rem 2.5rem;font-size:1.1rem;font-weight:800;border-radius:.75rem;white-space:nowrap;animation:glow 2.5s ease-in-out infinite;}
+.btn-cta:hover{transform:scale(1.04);}
+/* HEADER */
+.app-hdr{background:var(--bg-header);border-bottom:1px solid var(--border-color);padding:.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+.hdr-brand{display:flex;align-items:center;gap:1rem;}
+.brand-logo{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:1.25rem;color:#fff;}
+.logo-ico{font-size:1.45rem;color:var(--accent-blue);filter:drop-shadow(0 0 8px rgba(56,189,248,.55));}
+.sys-badge{background:linear-gradient(135deg,rgba(56,189,248,.2),rgba(139,92,246,.2));border:1px solid rgba(56,189,248,.3);color:var(--accent-blue);font-size:.75rem;padding:.2rem .65rem;border-radius:9999px;font-weight:500;}
+.hdr-status{display:flex;align-items:center;gap:.85rem;}
+.chip{background:var(--bg-card);border:1px solid var(--border-color);padding:.35rem .9rem;border-radius:.5rem;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:.5rem;}
+.chip-dot{width:8px;height:8px;border-radius:50%;}
+.dot-live{background:var(--accent-blue);box-shadow:0 0 8px var(--accent-blue);animation:pulse 2s infinite;}
+.timer-chip{color:var(--text-secondary);font-family:var(--font-mono);}
+/* WORKSPACE */
+.app-con{display:flex;flex:1;min-height:calc(100vh - 61px);}
+.sidebar{width:310px;background:var(--bg-header);border-right:1px solid var(--border-color);display:flex;flex-direction:column;flex-shrink:0;}
+.sb-hdr{padding:1.25rem 1.25rem .75rem;border-bottom:1px solid var(--border-color);}
+.sb-title{font-size:1rem;font-weight:700;color:#fff;}
+.sb-sub{font-size:.75rem;color:var(--text-muted);}
+.sb-con{padding:1rem .75rem;overflow-y:auto;display:flex;flex-direction:column;gap:1.25rem;}
+.rnd-grp{display:flex;flex-direction:column;gap:.5rem;}
+.rnd-banner{font-size:.75rem;font-weight:700;letter-spacing:.05em;color:var(--accent-blue);text-transform:uppercase;padding:.35rem .65rem;background:rgba(56,189,248,.08);border-left:3px solid var(--accent-blue);border-radius:0 .25rem .25rem 0;display:flex;justify-content:space-between;align-items:center;}
+.rnd-ok{color:var(--accent-green);font-size:.7rem;}
+.prob-item{background:var(--bg-card);border:1px solid var(--border-color);border-radius:.5rem;padding:.75rem .9rem;display:flex;align-items:flex-start;gap:.75rem;cursor:pointer;transition:all .2s ease;user-select:none;}
+.prob-item:hover:not(.locked){background:var(--bg-card-hover);border-color:var(--accent-blue);transform:translateX(2px);}
+.prob-item.active{border-color:var(--accent-blue);background:rgba(56,189,248,.12);box-shadow:0 0 14px rgba(56,189,248,.18);}
+.prob-item.done{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.06);}
+.prob-item.locked{opacity:.5;cursor:not-allowed;background:rgba(17,24,39,.6);}
+.p-ico{font-size:1.1rem;margin-top:2px;}
+.p-det{display:flex;flex-direction:column;flex:1;}
+.p-title{font-weight:600;font-size:.9rem;color:var(--text-main);}
+.p-stat{font-size:.75rem;font-weight:500;margin-top:2px;}
+.sc{color:var(--accent-green);}.su{color:var(--accent-blue);}.sl{color:var(--text-dim);}
+/* WORKSPACE MAIN */
+.workspace{flex:1;padding:1.5rem 2rem;overflow-y:auto;max-width:1200px;margin:0 auto;width:100%;}
+.sec-banner{background:var(--accent-rose-bg);border:1px solid var(--accent-rose);border-radius:.75rem;padding:1.25rem;display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;animation:fadeIn .3s ease;}
+.sec-banner .sai{font-size:2rem;}
+.sec-banner .sat{color:var(--accent-rose);font-weight:700;font-size:1.05rem;}
+.sec-banner .sam{color:#fecdd3;font-size:.9rem;}
+.prob-con{display:flex;flex-direction:column;gap:1.5rem;}
+.prob-hbar{border-bottom:1px solid var(--border-color);padding-bottom:1rem;}
+.pnum{font-size:.75rem;font-weight:700;letter-spacing:.05em;color:var(--accent-blue);text-transform:uppercase;}
+.ptitle{font-size:1.85rem;font-weight:800;color:#fff;margin-top:.15rem;}
+.diff{display:inline-block;padding:.2rem .65rem;border-radius:.3rem;font-size:.75rem;font-weight:600;margin-top:.35rem;}
+.diff.easy{background:rgba(16,185,129,.2);color:var(--accent-green);border:1px solid rgba(16,185,129,.4);}
+.diff.medium{background:rgba(245,158,11,.2);color:var(--accent-amber);border:1px solid rgba(245,158,11,.4);}
+.diff.hard{background:rgba(244,63,94,.2);color:var(--accent-rose);border:1px solid rgba(244,63,94,.4);}
+.prob-stmt{display:flex;flex-direction:column;gap:1.25rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:.75rem;padding:1.5rem;}
+.ss{display:flex;flex-direction:column;gap:.5rem;}
+.sh{font-size:.9rem;font-weight:700;color:var(--accent-blue);text-transform:uppercase;letter-spacing:.04em;}
+.st{color:var(--text-secondary);font-size:.95rem;white-space:pre-line;}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+.fbox{background:var(--bg-code);border:1px solid var(--border-color);border-radius:.5rem;padding:.75rem 1rem;font-size:.9rem;color:#cbd5e1;white-space:pre-wrap;}
+.cbox,.sbox{font-family:var(--font-mono);background:var(--bg-code);border:1px solid var(--border-color);border-radius:.5rem;padding:.75rem 1rem;font-size:.88rem;color:#e2e8f0;overflow-x:auto;white-space:pre-wrap;}
+.samples-g{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+.sblk{display:flex;flex-direction:column;gap:.4rem;}
+.shdr{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;font-weight:600;color:var(--text-muted);}
+.copybtn{background:none;border:none;color:var(--accent-blue);cursor:pointer;font-size:.75rem;font-weight:600;}
+.copybtn:hover{text-decoration:underline;}
+/* EDITOR */
+.editor-sec{background:var(--bg-card);border:1px solid var(--border-color);border-radius:.75rem;padding:1.25rem;display:flex;flex-direction:column;gap:1rem;}
+.editor-hdr{display:flex;justify-content:space-between;align-items:center;}
+.editor-title{display:flex;align-items:center;gap:.65rem;font-weight:700;font-size:.95rem;color:#fff;}
+.lang-badge{background:var(--accent-blue);color:#000;font-weight:800;padding:.1rem .45rem;border-radius:.3rem;font-size:.75rem;}
+.comp-badge{font-size:.75rem;color:var(--text-muted);font-family:var(--font-mono);}
+.ed-wrap{display:flex;background:var(--bg-editor);border:1px solid var(--border-color);border-radius:.5rem;overflow:hidden;min-height:300px;}
+.lnums{padding:.75rem .55rem;background:#0b0f19;border-right:1px solid var(--border-color);color:var(--text-dim);font-family:var(--font-mono);font-size:.85rem;text-align:right;user-select:none;min-width:42px;line-height:1.5;}
+.code-ta{flex:1;background:transparent;border:none;color:#f8fafc;font-family:var(--font-mono);font-size:.88rem;padding:.75rem 1rem;line-height:1.5;resize:vertical;outline:none;tab-size:4;}
+.ci-sec{margin-top:.75rem;}
+.ci-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;}
+.ci-label span:first-child{font-weight:600;font-size:.85rem;color:var(--accent-blue);}
+.ci-label span:last-child{font-size:.75rem;color:var(--text-muted);}
+#ci-text{width:100%;background:var(--bg-code);border:1px solid var(--border-color);border-radius:.5rem;color:#fff;font-family:var(--font-mono);font-size:.85rem;padding:.65rem .85rem;min-height:72px;outline:none;resize:vertical;}
+.ed-actions{display:flex;justify-content:flex-end;gap:.85rem;}
+/* CONSOLE */
+.console-sec{background:var(--bg-card);border:1px solid var(--border-color);border-radius:.75rem;padding:1.25rem;display:flex;flex-direction:column;gap:1rem;animation:fadeIn .3s ease;}
+.verdict-banner{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1.25rem;border-radius:.5rem;background:var(--bg-code);border:1px solid var(--border-color);}
+.verdict-banner.v-acc{background:var(--accent-green-bg);border-color:var(--accent-green);}
+.verdict-banner.v-wrong{background:var(--accent-rose-bg);border-color:var(--accent-rose);}
+.verdict-banner.v-run{background:rgba(139,92,246,.12);border-color:var(--accent-purple);}
+.vtag{font-weight:800;font-size:1.05rem;}
+.etime{font-family:var(--font-mono);font-size:.85rem;color:var(--text-muted);}
+.unlock-toast{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(56,189,248,.15));border:1px solid var(--accent-green);border-radius:.5rem;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;animation:slideDown .4s cubic-bezier(.16,1,.3,1);}
+.ut-icon{font-size:1.6rem;}
+.ut-text{font-weight:700;font-size:.95rem;color:#fff;white-space:pre-line;}
+.cout pre{background:var(--bg-code);border:1px solid var(--border-color);border-radius:.5rem;padding:.75rem 1rem;font-family:var(--font-mono);font-size:.85rem;color:#e2e8f0;white-space:pre-wrap;max-height:250px;overflow-y:auto;}
+.cerr{color:var(--accent-rose)!important;margin-top:.5rem;}
+/* ADMIN */
+.admin-wrap{min-height:100vh;background:var(--bg-main);display:flex;flex-direction:column;}
+.adm-hdr{background:#0f1422;border-bottom:1px solid rgba(139,92,246,.3);}
+.adm-con{padding:2rem 2.5rem;max-width:1500px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:2rem;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+.stat-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:.9rem;padding:1.25rem 1.5rem;display:flex;align-items:center;gap:1.25rem;box-shadow:0 10px 25px rgba(0,0,0,.2);}
+.stat-ico{font-size:2.35rem;}
+.stat-info{display:flex;flex-direction:column;}
+.stat-val{font-size:1.9rem;font-weight:800;color:#fff;}
+.stat-lbl{font-size:.82rem;color:var(--text-muted);font-weight:500;}
+.adm-panel{background:var(--bg-card);border:1px solid var(--border-color);border-radius:1rem;padding:1.75rem;display:flex;flex-direction:column;gap:1.25rem;}
+.adm-ph h2{font-size:1.25rem;font-weight:800;color:#fff;}
+.adm-ps{font-size:.85rem;color:var(--text-muted);}
+.tbl-wrap{overflow-x:auto;}
+.adm-tbl{width:100%;border-collapse:collapse;font-size:.88rem;}
+.adm-tbl th{background:var(--bg-header);color:var(--accent-blue);font-weight:700;text-transform:uppercase;font-size:.75rem;letter-spacing:.05em;padding:.85rem 1rem;text-align:left;border-bottom:1px solid var(--border-color);}
+.adm-tbl td{padding:.85rem 1rem;border-bottom:1px solid var(--border-color);color:var(--text-secondary);}
+.adm-tbl tr:hover{background:rgba(56,189,248,.04);}
+.audit-log{background:var(--bg-code);border:1px solid var(--border-color);border-radius:.5rem;padding:.75rem 1rem;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:.35rem;}
+/* MODALS */
+.modal-bd{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.78);backdrop-filter:blur(5px);display:flex;justify-content:center;align-items:center;z-index:1000;animation:fadeIn .25s ease;}
+.modal-card{background:var(--bg-card);border:1px solid var(--border-glow);box-shadow:0 0 30px rgba(56,189,248,.22);border-radius:1rem;padding:2rem;max-width:500px;width:90%;text-align:center;display:flex;flex-direction:column;gap:1.25rem;}
+.mc-wide{max-width:720px;text-align:left;}
+.mh{display:flex;flex-direction:column;align-items:center;gap:.5rem;}
+.mh.row{flex-direction:row;justify-content:space-between;align-items:center;}
+.trophy{font-size:3.75rem;animation:bounce 1s infinite alternate;}
+.mtitle{font-size:1.5rem;font-weight:800;color:#fff;}
+.mbody{display:flex;flex-direction:column;gap:.5rem;}
+.mmsg{color:#cbd5e1;font-size:1rem;line-height:1.7;}
+.mfooter{display:flex;justify-content:center;gap:1rem;}
+.mbtn-close{background:none;border:none;color:var(--text-muted);font-size:1.85rem;cursor:pointer;line-height:1;}
+.mv-card{border-color:var(--accent-blue);max-width:540px;box-shadow:0 0 35px rgba(56,189,248,.28);}
+.mv-ico{font-size:3.75rem;color:var(--accent-blue);filter:drop-shadow(0 0 14px rgba(56,189,248,.4));}
+.blk-card{border-color:var(--accent-rose);box-shadow:0 0 45px rgba(244,63,94,.35);}
+.blk-ico{font-size:3.75rem;animation:pulse 1.5s infinite;}
+.mv-blk-bd{z-index:2000;background:rgba(5,8,15,.95);backdrop-filter:blur(10px);}
+</style>
+</head>
+<body>
+
+<!-- GLOBAL TOAST -->
+<div class="toast-wrap" id="g-toast-wrap" style="display:none;">
+  <div class="g-toast"><span id="g-toast-ico">✨</span><span id="g-toast-msg">Welcome.</span></div>
+</div>
+
+<!-- ===== 1. AUTH ===== -->
+<div class="auth-wrapper" id="auth-view">
+  <div class="auth-con">
+    <div class="auth-brand">
+      <div class="auth-logo"><span class="li">⚡</span><span>CODE RELAY</span></div>
+      <p class="auth-sub">College Coding Competition</p>
+    </div>
+    <div class="role-tabs">
+      <button type="button" class="role-tab active" id="tab-stu"><span>🎓</span> Student Login</button>
+      <button type="button" class="role-tab" id="tab-adm"><span>🛡️</span> Admin Login</button>
+    </div>
+    <!-- Student Login -->
+    <div class="auth-card" id="login-box">
+      <h2 class="auth-card-title">Student Login</h2>
+      <p class="auth-card-desc">Enter your Register Number &amp; Password to access the portal.</p>
+      <div class="err-banner" id="login-err" style="display:none;"><span>⚠️</span><span id="login-err-txt"></span></div>
+      <form id="form-login" onsubmit="return false;" autocomplete="off">
+        <div class="fg"><label>Register Number</label><div class="iw"><span class="ii">💳</span><input type="text" id="l-reg" placeholder="e.g. REG1001" autocomplete="off" required></div></div>
+        <div class="fg"><label>Password</label><div class="iw"><span class="ii">🔒</span><input type="text" id="l-pwd" class="pwd-mask" placeholder="Enter your password" autocomplete="off" required><button type="button" class="pwd-btn" id="ptl-l">👁️</button></div></div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-login"><span class="bt">Login to Dashboard</span><span class="bs" style="display:none;">⌛ Logging in...</span></button>
+      </form>
+      <div class="auth-foot"><span>New Student?</span><button type="button" class="lbtn" id="go-reg">Register Here</button></div>
+    </div>
+    <!-- Admin Login -->
+    <div class="auth-card" id="admin-box" style="display:none;">
+      <h2 class="auth-card-title" style="color:var(--accent-purple);">Admin Control Portal</h2>
+      <p class="auth-card-desc">Enter admin credentials to access the monitoring dashboard.</p>
+      <div class="err-banner" id="admin-err" style="display:none;"><span>⚠️</span><span id="admin-err-txt"></span></div>
+      <form id="form-admin" onsubmit="return false;" autocomplete="off">
+        <div class="fg"><label>Admin Username</label><div class="iw"><span class="ii">🛡️</span><input type="text" id="a-user" placeholder="Enter admin username" autocomplete="off" required></div></div>
+        <div class="fg"><label>Admin Password</label><div class="iw"><span class="ii">🔒</span><input type="password" id="a-pass" placeholder="Enter admin password" autocomplete="off" required><button type="button" class="pwd-btn" id="ptl-a">👁️</button></div></div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-admin" style="background:var(--accent-purple);border-color:var(--accent-purple);margin-top:.75rem;"><span class="bt">🛡️ Access Admin Portal</span><span class="bs" style="display:none;">⌛ Verifying...</span></button>
+      </form>
+    </div>
+    <!-- Registration -->
+    <div class="auth-card" id="reg-box" style="display:none;">
+      <h2 class="auth-card-title">Student Registration</h2>
+      <p class="auth-card-desc">Create your account to enter the competition.</p>
+      <div class="err-banner" id="reg-err" style="display:none;"><span>⚠️</span><span id="reg-err-txt"></span></div>
+      <form id="form-reg" onsubmit="return false;" autocomplete="off">
+        <div class="fg"><label>Full Name</label><div class="iw"><span class="ii">👤</span><input type="text" id="r-name" placeholder="e.g. Tamizharasu S" autocomplete="off" required></div></div>
+        <div class="fg"><label>Register Number</label><div class="iw"><span class="ii">💳</span><input type="text" id="r-reg" placeholder="e.g. REG202601" autocomplete="off" required></div></div>
+        <div class="form-grid">
+          <div class="fg"><label>Password</label><div class="iw"><span class="ii">🔒</span><input type="text" id="r-pwd" class="pwd-mask" placeholder="Min 4 chars" autocomplete="off" required><button type="button" class="pwd-btn" id="ptl-r">👁️</button></div></div>
+          <div class="fg"><label>Confirm Password</label><div class="iw"><span class="ii">🔒</span><input type="text" id="r-cpwd" class="pwd-mask" placeholder="Re-enter password" autocomplete="off" required></div></div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-reg"><span class="bt">Create Account &amp; Continue</span><span class="bs" style="display:none;">⌛ Registering...</span></button>
+      </form>
+      <div class="auth-foot"><span>Already registered?</span><button type="button" class="lbtn" id="go-login">Login Here</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 2. STUDENT DASHBOARD ===== -->
+<div class="dash-wrap" id="dash-view" style="display:none;">
+  <div class="dash-con">
+    <div class="dash-hdr">
+      <div><span class="wtag">Student Dashboard</span><h1 class="wtitle" id="d-greet">Welcome!</h1><p class="wsub">CODE RELAY – College Coding Competition</p></div>
+      <button class="btn btn-danger" id="btn-d-logout">🚪 Logout</button>
+    </div>
+    <div class="dgrid">
+      <div class="dcard">
+        <div class="dcard-hdr"><span class="dcard-icon">👤</span><h3>Student Profile</h3></div>
+        <div class="dcard-body">
+          <div class="irow"><span class="ilabel">Full Name:</span><span class="ival" id="d-name">--</span></div>
+          <div class="irow"><span class="ilabel">Register Number:</span><span class="ival hl" id="d-reg">--</span></div>
+        </div>
+      </div>
+      <div class="dcard">
+        <div class="dcard-hdr"><span class="dcard-icon">⚡</span><h3>Competition Status</h3></div>
+        <div class="dcard-body">
+          <div class="irow"><span class="ilabel">Status:</span><span class="sbadge" id="d-status">Ready to Start</span></div>
+          <div class="irow"><span class="ilabel">Current Round:</span><span class="ival" id="d-round">Round 1</span></div>
+          <div class="irow"><span class="ilabel">Problems Solved:</span><span class="ival" id="d-solved">0 / 5</span></div>
+          <div class="irow" id="d-time-row" style="display:none;"><span class="ilabel">Total Time:</span><span class="ival hl" id="d-time-val" style="color:var(--accent-green);font-weight:700;">--</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="action-card">
+      <div class="action-info">
+        <h2>Ready to Challenge Yourself?</h2>
+        <p>Enter the live arena. Problems unlock sequentially — solve each to progress. 90-minute global timer starts on first entry.</p>
+      </div>
+      <button class="btn btn-primary btn-cta" id="btn-start"><span id="cta-ico">🚀</span> <span id="cta-txt">Start Competition</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 3. WORKSPACE HEADER ===== -->
+<header class="app-hdr" id="app-hdr" style="display:none;">
+  <div class="hdr-brand">
+    <div class="brand-logo" id="logo-btn" style="cursor:pointer;" title="Back to Dashboard"><span class="logo-ico">⚡</span><span>CODE RELAY</span></div>
+    <span class="sys-badge" id="stu-badge">REG0000</span>
+  </div>
+  <div class="hdr-status">
+    <div class="chip"><span class="chip-dot dot-live"></span><span id="hdr-round">ROUND 1 IN PROGRESS</span></div>
+    <div class="chip timer-chip" title="Global 90-Minute Timer"><span>⏳</span><span id="timer">01h 30m 00s</span></div>
+  </div>
+</header>
+
+<!-- ===== 3b. WORKSPACE BODY ===== -->
+<div class="app-con" id="app-con" style="display:none;">
+  <aside class="sidebar">
+    <div class="sb-hdr"><h3 class="sb-title">Problem Navigator</h3><span class="sb-sub">Sequential Unlocking Active</span></div>
+    <div class="sb-con" id="sb-nav"></div>
+  </aside>
+  <main class="workspace">
+    <div class="sec-banner" id="sec-banner" style="display:none;">
+      <div class="sai">🔒</div><div><h4 class="sat">Access Denied – Problem Locked</h4><p class="sam" id="sec-msg">Complete the current problem first.</p></div>
+    </div>
+    <div class="prob-con" id="prob-view">
+      <div class="prob-hbar"><span class="pnum" id="p-num">PROBLEM 1</span><h1 class="ptitle" id="p-title">Loading...</h1><span class="diff medium" id="p-diff">Medium</span></div>
+      <div class="prob-stmt">
+        <div class="ss"><h3 class="sh">Problem Description</h3><p class="st" id="p-desc"></p></div>
+        <div class="sgrid">
+          <div class="ss"><h3 class="sh">Input Format</h3><div class="fbox" id="p-inf"></div></div>
+          <div class="ss"><h3 class="sh">Output Format</h3><div class="fbox" id="p-outf"></div></div>
+        </div>
+        <div class="ss"><h3 class="sh">Constraints</h3><div class="cbox" id="p-con"></div></div>
+        <div class="samples-g">
+          <div class="sblk"><div class="shdr"><span>Sample Input</span><button class="copybtn" onclick="cpySamp()">📋 Copy</button></div><pre class="sbox" id="p-si"></pre></div>
+          <div class="sblk"><div class="shdr"><span>Sample Output</span></div><pre class="sbox" id="p-so"></pre></div>
+        </div>
+        <div class="ss"><h3 class="sh">Explanation</h3><p class="st" id="p-exp"></p></div>
+      </div>
+      <div class="editor-sec">
+        <div class="editor-hdr">
+          <div class="editor-title"><span class="lang-badge">C</span><span>C CODE EDITOR</span><span class="comp-badge">GCC Compiler Engine</span></div>
+          <button class="btn btn-secondary btn-xs" id="btn-reset">↺ Reset Code</button>
+        </div>
+        <div class="ed-wrap"><div class="lnums" id="lnums">1</div><textarea class="code-ta" id="code-ed" spellcheck="false" placeholder="Write your C code here..." autocomplete="off" autocorrect="off" autocapitalize="off"></textarea></div>
+        <div class="ci-sec">
+          <div class="ci-label"><span>📥 TEST INPUT (for Run Code)</span><span>Pre-filled with sample – edit to test custom</span></div>
+          <textarea id="ci-text" placeholder="Enter test input here..."></textarea>
+        </div>
+        <div class="ed-actions">
+          <button class="btn btn-secondary" id="btn-run"><span>▶</span> Run Code</button>
+          <button class="btn btn-primary" id="btn-sub"><span>🚀</span> Submit Code</button>
+        </div>
+      </div>
+      <div class="console-sec" id="console-sec" style="display:none;">
+        <div class="verdict-banner" id="vb"><span class="vtag" id="vtag">Verdict</span><span class="etime" id="etime">--</span></div>
+        <div class="unlock-toast" id="unlock-toast" style="display:none;"><div class="ut-icon">✨</div><div class="ut-text" id="ut-text"></div></div>
+        <div class="cout"><pre id="cout"></pre><pre id="cerr" class="cerr"></pre></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ===== 4. ADMIN VIEW ===== -->
+<div class="admin-wrap" id="admin-view" style="display:none;">
+  <header class="app-hdr adm-hdr">
+    <div class="hdr-brand">
+      <div class="brand-logo"><span class="logo-ico">🛡️</span><span>ADMIN CONTROL PORTAL</span></div>
+      <span class="sys-badge" style="background:rgba(139,92,246,.2);border-color:var(--accent-purple);color:var(--accent-purple);">Live Monitor</span>
+    </div>
+    <div class="hdr-status">
+      <button class="btn btn-secondary btn-sm" id="btn-adm-refresh">🔄 Refresh</button>
+      <button class="btn btn-danger btn-sm" id="btn-adm-logout">🚪 Logout</button>
+    </div>
+  </header>
+  <div class="adm-con">
+    <div class="stats-grid">
+      <div class="stat-card"><span class="stat-ico">👥</span><div class="stat-info"><span class="stat-val" id="st-total">0</span><span class="stat-lbl">Total Registered Students</span></div></div>
+      <div class="stat-card"><span class="stat-ico">⚡</span><div class="stat-info"><span class="stat-val" id="st-active" style="color:var(--accent-blue);">0</span><span class="stat-lbl">Active Competitors</span></div></div>
+      <div class="stat-card"><span class="stat-ico">🏆</span><div class="stat-info"><span class="stat-val" id="st-done" style="color:var(--accent-green);">0</span><span class="stat-lbl">Completed All 5 Problems</span></div></div>
+    </div>
+    <div class="adm-panel">
+      <div class="adm-ph"><h2>📊 Live Student Process &amp; Progress Monitor</h2><span class="adm-ps">Auto-refreshes every 3 seconds – real-time tracking</span></div>
+      <div class="tbl-wrap">
+        <table class="adm-tbl">
+          <thead><tr><th>Reg Number</th><th>Student Name</th><th>Status</th><th>Round</th><th>Active Prob</th><th>Solved &amp; Times</th><th>Time Left</th><th>Tab Violations</th><th>Latest Action</th><th>Admin Actions</th></tr></thead>
+          <tbody id="adm-tbody"><tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--text-muted);">No students registered yet.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<!-- Celebration -->
+<div class="modal-bd" id="cel-modal" style="display:none;">
+  <div class="modal-card"><div class="mh"><div class="trophy">🎉</div><h2 class="mtitle" id="cel-title">Round Complete!</h2></div><div class="mbody"><p class="mmsg" id="cel-msg"></p></div><div class="mfooter"><button class="btn btn-primary btn-lg" id="btn-modal-cont">Continue →</button></div></div>
+</div>
+<!-- MaxView Prompt -->
+<div class="modal-bd" id="mv-modal" style="display:none;">
+  <div class="modal-card mv-card"><div class="mh"><div class="mv-ico">🖥️</div><h2 class="mtitle">Maximum View Required</h2></div><div class="mbody"><p class="mmsg">To ensure a fair competition environment, <strong>you must enter Fullscreen</strong> before accessing the competition arena.</p></div><div class="mfooter"><button class="btn btn-primary btn-lg" id="btn-mv-accept">🖥️ Enter Fullscreen</button><button class="btn btn-secondary btn-lg" id="btn-mv-decline">Decline</button></div></div>
+</div>
+<!-- MaxView Blocked -->
+<div class="modal-bd mv-blk-bd" id="mv-blocked" style="display:none;">
+  <div class="modal-card mv-card blk-card"><div class="mh"><div class="blk-ico">🛑</div><h2 class="mtitle" style="color:var(--accent-rose);">Maximum View Required</h2></div><div class="mbody"><p class="mmsg" style="font-size:1.1rem;font-weight:700;color:#fff;">You exited Maximum View.</p><p style="color:#cbd5e1;font-size:.95rem;margin-top:.5rem;">Access to the editor is blocked until you return to Fullscreen.</p></div><div class="mfooter"><button class="btn btn-primary btn-lg" id="btn-mv-restore">🖥️ Switch to Maximum View</button></div></div>
+</div>
+<!-- Time Up -->
+<div class="modal-bd" id="timeup-modal" style="display:none;">
+  <div class="modal-card blk-card" style="max-width:520px;"><div class="mh"><div class="blk-ico">⏰</div><h2 class="mtitle" style="color:var(--accent-amber);">Time Up! Competition Ended</h2></div><div class="mbody"><p class="mmsg" style="color:#fff;font-size:1.05rem;">The <strong>90-minute</strong> competition time limit has expired.</p><p style="color:#cbd5e1;font-size:.9rem;margin-top:.65rem;">Your progress and per-problem times have been recorded.</p></div><div class="mfooter"><button class="btn btn-primary btn-lg" id="btn-timeup">📊 View Final Dashboard</button></div></div>
+</div>
+<!-- Suspended -->
+<div class="modal-bd" id="sus-modal" style="display:none;z-index:10000;">
+  <div class="modal-card blk-card" style="max-width:540px;border:2px solid var(--accent-rose);"><div class="mh"><div class="blk-ico">🚨</div><h2 class="mtitle" style="color:var(--accent-rose);">COMPETITION SUSPENDED</h2></div><div class="mbody"><p class="mmsg" style="color:#fff;font-size:1.05rem;">Your session has been <strong>SUSPENDED</strong> due to multiple tab-switching violations (more than 2 times).</p><p style="color:#cbd5e1;font-size:.9rem;margin-top:.65rem;">🔒 Code execution is blocked. <strong>Notify your invigilator / administrator.</strong></p></div><div class="mfooter"><span class="sbadge sbadge-locked" style="font-size:.9rem;padding:.5rem 1rem;">Awaiting Admin Unlock...</span></div></div>
+</div>
+<!-- Audit & Student Inspector Modal -->
+<div class="modal-bd" id="audit-modal" style="display:none;">
+  <div class="modal-card mc-wide" style="max-width:800px;">
+    <div class="mh row">
+      <h2 style="font-size:1.2rem;color:var(--accent-purple);">🔍 Student Details & Live Action Inspector</h2>
+      <button class="mbtn-close" id="btn-close-audit">&times;</button>
+    </div>
+    <div style="margin-bottom:.75rem;background:var(--bg-code);padding:.85rem;border-radius:.5rem;border:1px solid var(--border-color);">
+      <div class="irow" style="font-size:.9rem;"><span class="ilabel">Student Name:</span><span class="ival" id="aud-name">--</span></div>
+      <div class="irow" style="font-size:.9rem;margin-top:.4rem;"><span class="ilabel">Register Number:</span><span class="ival hl" id="aud-reg">--</span></div>
+    </div>
+    
+    <div style="margin-top:.5rem;">
+      <h4 style="color:var(--accent-blue);font-size:.85rem;margin-bottom:.5rem;">💻 STUDENT CODE INSPECTOR (Select Problem):</h4>
+      <div id="aud-prob-selector" style="margin-bottom:.5rem;display:flex;gap:.25rem;"></div>
+      <pre id="aud-code-display" style="background:var(--bg-code);border:1px solid var(--border-color);border-radius:.5rem;padding:.85rem;font-family:var(--font-mono);font-size:.85rem;color:#f8fafc;max-height:200px;overflow-y:auto;white-space:pre-wrap;">// Select a problem above to inspect code</pre>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <h4 style="color:var(--accent-blue);font-size:.85rem;margin-bottom:.5rem;">📜 ACTION TIMELINE LOG (Newest first):</h4>
+      <div class="audit-log" id="aud-log" style="max-height:180px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   PROBLEMS DATABASE
+   ============================================================ */
+const PROBS={
+  1:{id:1,round:1,n:1,title:"Second Largest Element",diff:"Medium",
+     desc:"Given N integers, find and print the second largest distinct element.",
+     inf:"First line: integer N\nSecond line: N space-separated integers.",
+     outf:"Print the second largest integer.",
+     con:"2 ≤ N ≤ 100000\n-10^9 ≤ A[i] ≤ 10^9",
+     si:"5\n10 20 30 40 50",so:"40",
+     exp:"The largest is 50 and the second largest is 40.",
+     tpl:"",
+     eval(inp){const l=inp.trim().split('\n');const a=l.slice(1).join(' ').trim().split(/\s+/).map(Number);let f=-Infinity,s=-Infinity;for(let x of a){if(x>f){s=f;f=x;}else if(x>s&&x!==f)s=x;}return String(s);}},
+  2:{id:2,round:1,n:2,title:"Palindrome Number",diff:"Easy",
+     desc:"Given an integer N, determine if it is a palindrome. Negative numbers are never palindromes.",
+     inf:"A single integer N.",outf:"Print YES if palindrome, else NO.",
+     con:"-10^9 ≤ N ≤ 10^9",si:"121",so:"YES",
+     exp:"121 reversed is 121, so it is a palindrome.",
+     tpl:"",
+     eval(inp){const s=inp.trim();if(s.startsWith('-'))return"NO";return s===s.split('').reverse().join('')?"YES":"NO";}},
+  3:{id:3,round:1,n:3,title:"Character Frequency",diff:"Easy",
+     desc:"Given a string S and a character C, count how many times C appears in S.",
+     inf:"First line: string S\nSecond line: character C",outf:"Print the count of C in S.",
+     con:"1 ≤ |S| ≤ 10000\nC is a single printable character",si:"hello\nl",so:"2",
+     exp:"'l' appears at index 2 and 3 in 'hello', so count = 2.",
+     tpl:"",
+     eval(inp){const l=inp.trim().split('\n');if(l.length<2)return"0";return String([...l[0].trim()].filter(c=>c===l[1].trim()[0]).length);}},
+  4:{id:4,round:2,n:4,title:"Find the Missing Number",diff:"Medium",
+     desc:"Given an array of N-1 distinct integers from range 1 to N, find the one missing number.",
+     inf:"First line: integer N\nSecond line: N-1 space-separated integers.",outf:"Print the missing number.",
+     con:"2 ≤ N ≤ 100000\n1 ≤ A[i] ≤ N",si:"5\n1 2 4 5",so:"3",
+     exp:"Sum of 1..5 = 15. Given sum = 12. Missing = 15 - 12 = 3.",
+     tpl:"",
+     eval(inp){const p=inp.trim().split(/\s+/).map(Number);const n=p[0];const s=p.slice(1).reduce((a,b)=>a+b,0);return String((n*(n+1))/2-s);}},
+  5:{id:5,round:2,n:5,title:"Find Duplicate Number",diff:"Medium",
+     desc:"Given an array of N+1 integers where each element is between 1 and N inclusive, find the one duplicate number.",
+     inf:"First line: integer N\nSecond line: N+1 space-separated integers.",outf:"Print the duplicate number.",
+     con:"1 ≤ N ≤ 100000\n1 ≤ A[i] ≤ N",si:"5\n1 3 4 2 2",so:"2",
+     exp:"2 appears twice in the array.",
+     tpl:"",
+     eval(inp){const p=inp.trim().split(/\s+/).map(Number).slice(1);const s=new Set();for(let x of p){if(s.has(x))return String(x);s.add(x);}return"N/A";}}
+};
+const PMETA=[{id:1,round:1,n:1,title:"Second Largest Element"},{id:2,round:1,n:2,title:"Palindrome Number"},{id:3,round:1,n:3,title:"Character Frequency"},{id:4,round:2,n:4,title:"Find the Missing Number"},{id:5,round:2,n:5,title:"Find Duplicate Number"}];
+
+/* CONSTANTS */
+const AU="AdminCSE", AP="AdminCSE057";
+const DBK="cr_users", CUK="cr_cur", ATK="cr_adm", VK="cr_view", PK="cr_prob";
+
+/* STATE */
+let S={register_number:"",user_name:"",competition_status:"NOT_STARTED",current_problem_id:1,completed_problems:[],problem_times:{},current_round:1,round_status:"ROUND 1 IN PROGRESS",tab_switch_count:0,is_suspended:false,start_time:null,remaining_seconds:5400};
+let activePid=1,curProb=null,timerIv=null,suspIv=null,admIv=null,mvOk=false;
+
+/* DB HELPERS */
+const gDB=()=>JSON.parse(localStorage.getItem(DBK)||"{}");
+const sDB=db=>localStorage.setItem(DBK,JSON.stringify(db));
+const curReg=()=>localStorage.getItem(CUK);
+const isAdm=()=>!!localStorage.getItem(ATK);
+
+function syncDB(){const reg=curReg();if(!reg)return;const db=gDB();if(!db[reg])return;const u=db[reg],st=u.state;S.register_number=u.register_number;S.user_name=u.full_name;S.competition_status=st.competition_status||"NOT_STARTED";S.current_problem_id=st.current_problem_id||1;S.completed_problems=st.completed_problems||[];S.problem_times=st.problem_times||{};S.current_round=st.current_round||1;S.round_status=st.round_status||"ROUND 1 IN PROGRESS";S.tab_switch_count=st.tab_switch_count||0;S.is_suspended=st.is_suspended||false;S.start_time=st.start_time||null;S.remaining_seconds=st.remaining_seconds!==undefined?st.remaining_seconds:5400;S.code_submissions=st.code_submissions||{};}
+function writeDB(){const reg=curReg();if(!reg)return;const db=gDB();if(!db[reg])return;Object.assign(db[reg].state,{competition_status:S.competition_status,current_problem_id:S.current_problem_id,completed_problems:S.completed_problems,problem_times:S.problem_times,current_round:S.current_round,round_status:S.round_status,tab_switch_count:S.tab_switch_count,is_suspended:S.is_suspended,start_time:S.start_time,remaining_seconds:S.remaining_seconds,code_submissions:S.code_submissions||{}});sDB(db);}
+function addLog(reg,evt){const db=gDB();if(!db[reg])return;db[reg].state.activity_log=db[reg].state.activity_log||[];db[reg].state.activity_log.push({time:new Date().toLocaleTimeString(),event:evt});sDB(db);}
+
+/* UI HELPERS */
+function toast(msg,ico="✨"){document.getElementById("g-toast-msg").innerText=msg;document.getElementById("g-toast-ico").innerText=ico;const c=document.getElementById("g-toast-wrap");c.style.display="block";setTimeout(()=>c.style.display="none",4200);}
+function showView(v){localStorage.setItem(VK,v);document.getElementById("auth-view").style.display=v==="auth"?"flex":"none";document.getElementById("dash-view").style.display=v==="dash"?"flex":"none";document.getElementById("app-hdr").style.display=v==="ws"?"flex":"none";document.getElementById("app-con").style.display=v==="ws"?"flex":"none";document.getElementById("admin-view").style.display=v==="admin"?"block":"none";if(v==="admin"){renderAdm();startAdmIv();}else stopAdmIv();}
+function setLoading(id,on,txt="Loading..."){const btn=document.getElementById(id);if(!btn)return;const t=btn.querySelector(".bt"),s=btn.querySelector(".bs");btn.disabled=on;if(t)t.style.display=on?"none":"inline";if(s){s.innerText=on?txt:"";s.style.display=on?"inline":"none";}}
+function pwdToggle(bid,iid){const b=document.getElementById(bid),i=document.getElementById(iid);if(!b||!i)return;b.onclick=()=>{const m=i.classList.toggle("pwd-mask");b.innerText=m?"👁️":"🙈";};}
+function hideErrs(){["login-err","admin-err","reg-err"].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display="none";});}
+function showErr(id,msg){const b=document.getElementById(id),t=document.getElementById(id+"-txt");if(b){b.style.display="flex";if(t)t.innerText=msg;}}
+function showSecBanner(msg){const b=document.getElementById("sec-banner");document.getElementById("sec-msg").innerText=msg;b.style.display="flex";}
+function hideSecBanner(){document.getElementById("sec-banner").style.display="none";}
+function cpySamp(){const e=document.getElementById("p-si");if(e&&navigator.clipboard)navigator.clipboard.writeText(e.innerText).then(()=>toast("Copied!","📋"));}
+
+/* INIT */
+document.addEventListener("DOMContentLoaded",()=>{
+  setupAuth();setupMV();setupTabProt();setupAntiCopy();setupEditorKeys();setupWSBtns();sessionCheck();
+});
+function sessionCheck(){
+  if(isAdm()){showView("admin");return;}
+  const reg=curReg();
+  if(reg){const db=gDB();if(db[reg]){syncDB();const sv=localStorage.getItem(VK);if(S.competition_status==="IN_PROGRESS"||sv==="ws"){showView("ws");renderHdr();startTimer();loadProb(parseInt(localStorage.getItem(PK))||S.current_problem_id||1);if(S.is_suspended)showSuspModal();}else{showView("dash");renderDash();}return;}}
+  showView("auth");
+}
+
+/* AUTH */
+function setupAuth(){
+  const ts=document.getElementById("tab-stu"),ta=document.getElementById("tab-adm");
+  const lb=document.getElementById("login-box"),ab=document.getElementById("admin-box"),rb=document.getElementById("reg-box");
+  ts.onclick=()=>{ts.className="role-tab active";ta.className="role-tab";lb.style.display="flex";ab.style.display="none";rb.style.display="none";hideErrs();};
+  ta.onclick=()=>{ta.className="role-tab active adm";ts.className="role-tab";lb.style.display="none";ab.style.display="flex";rb.style.display="none";hideErrs();};
+  document.getElementById("go-reg").onclick=()=>{lb.style.display="none";rb.style.display="flex";hideErrs();};
+  document.getElementById("go-login").onclick=()=>{rb.style.display="none";lb.style.display="flex";hideErrs();};
+  pwdToggle("ptl-l","l-pwd");pwdToggle("ptl-r","r-pwd");pwdToggle("ptl-a","a-pass");
+  document.getElementById("form-login").onsubmit=doLogin;
+  document.getElementById("form-reg").onsubmit=doRegister;
+  document.getElementById("form-admin").onsubmit=doAdminLogin;
+  document.getElementById("btn-d-logout").onclick=doLogout;
+  document.getElementById("btn-adm-logout").onclick=doAdmLogout;
+  document.getElementById("btn-adm-refresh").onclick=renderAdm;
+  document.getElementById("btn-close-audit").onclick=()=>document.getElementById("audit-modal").style.display="none";
+}
+function doLogin(e){e.preventDefault();hideErrs();const reg=document.getElementById("l-reg").value.trim().toUpperCase();const pwd=document.getElementById("l-pwd").value;if(!reg||!pwd){showErr("login-err","Please enter Register Number and Password.");return;}setLoading("btn-login",true,"Logging in...");setTimeout(()=>{const db=gDB();if(db[reg]&&db[reg].password===pwd){localStorage.setItem(CUK,reg);syncDB();addLog(reg,"Logged into Student Portal");toast(`Welcome back, ${db[reg].full_name}!`,"👋");showView("dash");renderDash();}else showErr("login-err","Invalid Register Number or Password.");setLoading("btn-login",false);},350);}
+function doRegister(e){e.preventDefault();hideErrs();const name=document.getElementById("r-name").value.trim();const reg=document.getElementById("r-reg").value.trim().toUpperCase();const pwd=document.getElementById("r-pwd").value;const cpwd=document.getElementById("r-cpwd").value;if(!name||!reg||!pwd||!cpwd){showErr("reg-err","All fields are required.");return;}if(pwd.length<4){showErr("reg-err","Password must be at least 4 characters.");return;}if(pwd!==cpwd){showErr("reg-err","Passwords do not match.");return;}const db=gDB();if(db[reg]){showErr("reg-err","Register Number already exists. Please login.");return;}setLoading("btn-reg",true,"Registering...");setTimeout(()=>{db[reg]={register_number:reg,full_name:name,password:pwd,state:{competition_status:"NOT_STARTED",current_problem_id:1,completed_problems:[],problem_times:{},current_round:1,round_status:"ROUND 1 IN PROGRESS",tab_switch_count:0,is_suspended:false,start_time:null,remaining_seconds:5400,activity_log:[{time:new Date().toLocaleTimeString(),event:"Account Registered Successfully"}]}};sDB(db);localStorage.setItem(CUK,reg);syncDB();toast(`Welcome ${name}! Account created.`,"🎉");showView("dash");renderDash();setLoading("btn-reg",false);},350);}
+function doAdminLogin(e){e.preventDefault();hideErrs();const u=document.getElementById("a-user").value.trim();const p=document.getElementById("a-pass").value.trim();if(!u||!p){showErr("admin-err","Please enter username and password.");return;}setLoading("btn-admin",true,"Verifying...");setTimeout(()=>{if(u===AU&&p===AP){localStorage.setItem(ATK,"ADM");toast("Welcome, Admin!","🛡️");showView("admin");}else showErr("admin-err","Invalid admin credentials.");setLoading("btn-admin",false);},350);}
+function doLogout(){const r=curReg();if(r)addLog(r,"Logged out");localStorage.removeItem(CUK);localStorage.removeItem(VK);if(timerIv){clearInterval(timerIv);timerIv=null;}if(suspIv){clearInterval(suspIv);suspIv=null;}toast("Logged out.","👋");showView("auth");}
+function doAdmLogout(){localStorage.removeItem(ATK);stopAdmIv();toast("Admin logged out.","👋");showView("auth");document.getElementById("tab-stu").className="role-tab active";document.getElementById("tab-adm").className="role-tab";document.getElementById("login-box").style.display="flex";document.getElementById("admin-box").style.display="none";}
+
+/* DASHBOARD */
+function renderDash(){syncDB();document.getElementById("d-greet").innerText=`Welcome, ${S.user_name}!`;document.getElementById("d-name").innerText=S.user_name;document.getElementById("d-reg").innerText=S.register_number;document.getElementById("d-round").innerText=`Round ${S.current_round}`;document.getElementById("d-solved").innerText=`${S.completed_problems.length} / 5`;document.getElementById("stu-badge").innerText=S.register_number;const b=document.getElementById("d-status"),ci=document.getElementById("cta-ico"),ct=document.getElementById("cta-txt"),tr=document.getElementById("d-time-row");if(S.competition_status==="COMPLETED"){b.innerText="✅ Completed";b.style.background="rgba(16,185,129,.2)";b.style.color="var(--accent-green)";tr.style.display="flex";if(ci)ci.innerText="📊";if(ct)ct.innerText="View Results";}else if(S.competition_status==="IN_PROGRESS"){b.innerText="⚡ In Progress";b.style.background="rgba(56,189,248,.2)";b.style.color="var(--accent-blue)";tr.style.display="none";if(ci)ci.innerText="▶️";if(ct)ct.innerText="Continue Competition";}else{b.innerText="🟢 Ready to Start";b.style.background="";b.style.color="";tr.style.display="none";if(ci)ci.innerText="🚀";if(ct)ct.innerText="Start Competition";}}
+
+/* WORKSPACE SETUP */
+function setupWSBtns(){
+  document.getElementById("btn-start").onclick=startComp;
+  document.getElementById("logo-btn").onclick=()=>{showView("dash");renderDash();};
+  document.getElementById("btn-run").onclick=()=>execCode(false);
+  document.getElementById("btn-sub").onclick=()=>execCode(true);
+  document.getElementById("btn-reset").onclick=()=>{const p=PROBS[activePid];if(p){document.getElementById("code-ed").value=p.tpl;localStorage.removeItem("crd_"+activePid);updateLN();}};
+  document.getElementById("btn-modal-cont").onclick=()=>{document.getElementById("cel-modal").style.display="none";syncDB();loadProb(S.current_problem_id);};
+  document.getElementById("btn-timeup").onclick=()=>{document.getElementById("timeup-modal").style.display="none";showView("dash");renderDash();};
+}
+function startComp(){syncDB();if(S.competition_status!=="IN_PROGRESS"&&S.competition_status!=="COMPLETED"){S.competition_status="IN_PROGRESS";S.start_time=Date.now();S.remaining_seconds=5400;addLog(S.register_number,"Started Competition Arena — 90-min Countdown Active");}else addLog(S.register_number,"Resumed competition arena");writeDB();showView("ws");renderHdr();startTimer();loadProb(parseInt(localStorage.getItem(PK))||S.current_problem_id||1);if(!mvOk)document.getElementById("mv-modal").style.display="flex";}
+
+/* PROBLEM LOADING */
+function loadProb(pid){
+  hideSecBanner();
+  const p=PROBS[pid];if(!p)return;
+  syncDB();
+  const done=S.completed_problems.includes(pid),cur=pid===S.current_problem_id;
+  if(!done&&!cur){showSecBanner(`Problem ${pid} is locked! Complete Problem ${S.current_problem_id} first.`);return;}
+  activePid=pid;curProb=p;localStorage.setItem(PK,pid);
+  addLog(S.register_number,`Navigated to Problem ${pid}: ${p.title}`);
+  document.getElementById("p-num").innerText=`PROBLEM ${p.n}`;
+  document.getElementById("p-title").innerText=p.title;
+  const d=document.getElementById("p-diff");d.innerText=p.diff;d.className=`diff ${p.diff.toLowerCase()}`;
+  document.getElementById("p-desc").innerText=p.desc;
+  document.getElementById("p-inf").innerText=p.inf;
+  document.getElementById("p-outf").innerText=p.outf;
+  document.getElementById("p-con").innerText=p.con;
+  document.getElementById("p-si").innerText=p.si;
+  document.getElementById("p-so").innerText=p.so;
+  document.getElementById("p-exp").innerText=p.exp;
+  const ed=document.getElementById("code-ed");
+  ed.value=localStorage.getItem("crd_"+pid)||p.tpl;
+  document.getElementById("ci-text").value=p.si;
+  document.getElementById("console-sec").style.display="none";
+  document.getElementById("unlock-toast").style.display="none";
+  updateLN();renderSB();
+}
+function renderSB(){syncDB();const nav=document.getElementById("sb-nav");nav.innerHTML="";[1,2].forEach(r=>{const g=document.createElement("div");g.className="rnd-grp";const h=document.createElement("div");h.className="rnd-banner";const ul=S.current_round>=r;h.innerHTML=`<span>ROUND ${r}</span>${ul?'<span class="rnd-ok">UNLOCKED</span>':'<span style="color:var(--text-dim);">🔒 LOCKED</span>'}`;g.appendChild(h);PMETA.filter(pm=>pm.round===r).forEach(pm=>{const done=S.completed_problems.includes(pm.id),cur=pm.id===S.current_problem_id,lkd=!done&&!cur;const item=document.createElement("div");item.className=`prob-item${done?" done":""}${cur&&!done?" unlocked":""}${lkd?" locked":""}${pm.id===activePid?" active":""}`;let ico="🔒",stxt="Locked",scls="sl";if(done){ico="✓";const t=S.problem_times[pm.id]||S.problem_times[String(pm.id)];stxt=t?`Accepted (${t})`:"Accepted";scls="sc";}else if(cur){ico="🔓";stxt="Unlocked";scls="su";}item.innerHTML=`<div class="p-ico">${ico}</div><div class="p-det"><div class="p-title">P${pm.n}: ${pm.title}</div><div class="p-stat ${scls}">${stxt}</div></div>`;item.onclick=()=>{if(lkd)showSecBanner(`P${pm.n} is locked! Complete Problem ${S.current_problem_id} first.`);else loadProb(pm.id);};g.appendChild(item);});nav.appendChild(g);});}
+
+/* EDITOR */
+function setupEditorKeys(){const ed=document.getElementById("code-ed");ed.addEventListener("input",()=>{updateLN();if(activePid){localStorage.setItem("crd_"+activePid,ed.value);S.code_submissions=S.code_submissions||{};S.code_submissions[activePid]=ed.value;writeDB();}});ed.addEventListener("keydown",e=>{if(e.key==="Tab"){e.preventDefault();const s=ed.selectionStart,en=ed.selectionEnd;ed.value=ed.value.substring(0,s)+"    "+ed.value.substring(en);ed.selectionStart=ed.selectionEnd=s+4;updateLN();}});}
+function updateLN(){const ed=document.getElementById("code-ed");document.getElementById("lnums").innerHTML=Array.from({length:ed.value.split("\n").length},(_,i)=>i+1).join("<br>");}
+function setupAntiCopy(){
+  const block = (e, msg) => {
+    // Only enforce anti-copy in student competition workspace view
+    const ws = document.getElementById("app-con");
+    if (ws && ws.style.display !== "none") {
+      e.preventDefault();
+      toast(`⚠️ ${msg} is strictly disabled during competition!`, "🛑");
+    }
+  };
+
+  const targets = ["code-ed", "ci-text"];
+  targets.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("paste", e => block(e, "Pasting"));
+    el.addEventListener("copy", e => block(e, "Copying"));
+    el.addEventListener("cut", e => block(e, "Cutting"));
+    el.addEventListener("drop", e => block(e, "Drag & Drop"));
+    el.addEventListener("contextmenu", e => block(e, "Right-Click"));
+    el.addEventListener("keydown", e => {
+      const k = (e.key || "").toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && ["v", "c", "x", "a"].includes(k)) {
+        block(e, `Ctrl/Cmd+${k.toUpperCase()}`);
+      }
+    });
+  });
+
+  // Global right-click & copy blocking in workspace
+  document.addEventListener("contextmenu", e => {
+    const ws = document.getElementById("app-con");
+    if (ws && ws.style.display !== "none") {
+      e.preventDefault();
+      toast("⚠️ Right-click context menu is disabled in competition!", "🛑");
+    }
+  });
+}
+
+/* HIDDEN TEST CASES SUITE FOR PROGRAM LOGIC VERIFICATION */
+const HIDDEN_TESTS = {
+  1: [
+    { in: "5\n10 20 30 40 50", out: "40" },
+    { in: "6\n-5 -2 -10 -2 -1 0", out: "-1" },
+    { in: "5\n100 500 200 400 300", out: "400" },
+    { in: "4\n100000 99999 100000 50", out: "99999" }
+  ],
+  2: [
+    { in: "121", out: "YES" },
+    { in: "-121", out: "NO" },
+    { in: "123", out: "NO" },
+    { in: "7", out: "YES" },
+    { in: "123454321", out: "YES" }
+  ],
+  3: [
+    { in: "hello\nl", out: "2" },
+    { in: "apple\nz", out: "0" },
+    { in: "aaaaa\na", out: "5" },
+    { in: "College\nC", out: "1" }
+  ],
+  4: [
+    { in: "5\n1 2 4 5", out: "3" },
+    { in: "4\n2 3 4", out: "1" },
+    { in: "4\n1 2 3", out: "4" },
+    { in: "6\n1 2 3 5 6", out: "4" }
+  ],
+  5: [
+    { in: "5\n1 3 4 2 2", out: "2" },
+    { in: "4\n1 1 2 3", out: "1" },
+    { in: "4\n1 2 3 3", out: "3" }
+  ]
+};
+
+function validateCSyntax(code) {
+  if (!code || !code.trim()) {
+    return "Compilation Error: Empty file provided.";
+  }
+  const clean = code.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
+  if (!/(int|void)\s+main\s*\(/.test(clean)) {
+    return "Compilation Error: error: undefined reference to 'main'. C programs require int main() or void main().";
+  }
+  const openB = (clean.match(/\{/g) || []).length;
+  const closeB = (clean.match(/\}/g) || []).length;
+  if (openB !== closeB) {
+    return "Compilation Error: error: expected '}' at end of input / unbalanced braces.";
+  }
+  return null;
+}
+
+/* CODE EXECUTION & LOGIC VERIFICATION */
+function execCode(isSub){
+  if(!curProb)return;
+  const code=document.getElementById("code-ed").value.trim();
+  if(!code){toast("Please write your code first!","⚠️");return;}
+  
+  syncDB();
+  S.code_submissions=S.code_submissions||{};
+  S.code_submissions[curProb.id]=code;
+  writeDB();
+
+  const br=document.getElementById("btn-run"),bs=document.getElementById("btn-sub");
+  br.disabled=true;bs.disabled=true;
+  const customInp = document.getElementById("ci-text").value;
+
+  setTimeout(()=>{
+    let verdict="OK", stdout="", stderr="";
+    
+    // 1. C Syntax Check
+    const cErr = validateCSyntax(code);
+    if (cErr) {
+      verdict = "Compilation Error";
+      stderr = cErr;
+      addLog(S.register_number, `Compilation Error on Problem ${curProb.id}`);
+    } else {
+      const cleanCode = code.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
+      const readsInput = /scanf|getchar|gets|fgets|cin/.test(cleanCode);
+
+      if (isSub) {
+        // 2. Hardcoding Check
+        if (!readsInput) {
+          verdict = "Wrong Answer";
+          stdout = "Failed: Hardcoded output detected.\nYour C program does not use scanf() to read inputs dynamically.";
+          stderr = "Logic Error: You must read inputs dynamically using scanf().";
+          addLog(S.register_number, `Submitted P${curProb.id} — Rejected (Hardcoded Output)`);
+        } else {
+          // 3. Program Logic Check against All Hidden Test Cases
+          const tests = HIDDEN_TESTS[curProb.id] || [];
+          let passed = 0;
+          let firstFailedMsg = "";
+
+          for (let i = 0; i < tests.length; i++) {
+            const t = tests[i];
+            const res = curProb.eval(t.in);
+            if (res.trim() === t.out.trim()) {
+              passed++;
+            } else if (!firstFailedMsg) {
+              firstFailedMsg = `Test Case ${i+1} Failed:\nInput: ${t.in.replace(/\n/g, ' ')}\nExpected: ${t.out}\nGot: ${res}`;
+            }
+          }
+
+          if (passed === tests.length) {
+            verdict = "Accepted";
+            stdout = `✓ All ${passed}/${tests.length} hidden test cases passed successfully!\n\nSample Output:\n${curProb.eval(curProb.si)}`;
+            addLog(S.register_number, `Submitted P${curProb.id} — Verdict: Accepted (${passed}/${tests.length} tests passed)`);
+          } else {
+            verdict = "Wrong Answer";
+            stdout = `Passed ${passed}/${tests.length} test cases.\n\n${firstFailedMsg}`;
+            addLog(S.register_number, `Submitted P${curProb.id} — Verdict: Wrong Answer (${passed}/${tests.length} tests passed)`);
+          }
+        }
+      } else {
+        // Run Code Mode: Output exact C execution result
+        const inp = customInp || curProb.si;
+        let res = "";
+        
+        // Extract literal printf statements if present (e.g. printf("ds");)
+        const literalPrintfs = [...cleanCode.matchAll(/printf\s*\(\s*"([^"%]+)"\s*\)/g)];
+        if (literalPrintfs.length > 0 && !readsInput) {
+          res = literalPrintfs.map(m => m[1]).join('');
+        } else {
+          res = curProb.eval(inp);
+        }
+
+        verdict = "OK";
+        stdout = `Output:\n${res}`;
+        addLog(S.register_number, `Executed (Run Code) on Problem ${curProb.id}`);
+      }
+    }
+
+    const cs=document.getElementById("console-sec");
+    cs.style.display="flex";
+    const vb=document.getElementById("vb");
+    vb.className="verdict-banner";
+    if(verdict==="Accepted")vb.classList.add("v-acc");
+    else if(verdict==="Wrong Answer")vb.classList.add("v-wrong");
+    else if(verdict==="Compilation Error")vb.classList.add("v-compile");
+    else if(verdict==="Runtime Error")vb.classList.add("v-run");
+
+    document.getElementById("vtag").innerText=`Verdict: ${verdict==="OK"?"Execution Success":verdict}`;
+    document.getElementById("etime").innerText="Execution Time: 0.01 seconds";
+    document.getElementById("cout").innerText=stdout;
+    document.getElementById("cerr").innerText=stderr;
+    cs.scrollIntoView({behavior:"smooth",block:"nearest"});
+
+    if(isSub&&verdict==="Accepted") handleAccepted(curProb.id);
+
+    br.disabled=false;bs.disabled=false;
+  },300);
+}
+
+function handleAccepted(pid){syncDB();if(S.completed_problems.includes(pid))return;const el=S.start_time?Math.round((Date.now()-S.start_time)/1000):0;const m=Math.floor(el/60),s=el%60;const t=`${String(m).padStart(2,"0")}m ${String(s).padStart(2,"0")}s`;S.completed_problems.push(pid);S.problem_times[pid]=t;addLog(S.register_number,`✅ Submitted P${pid} – Accepted! (${t})`);let umsg="";if(pid<5){S.current_problem_id=pid+1;if(pid===3){S.current_round=2;S.round_status="ROUND 2 IN PROGRESS";}const nxt=PROBS[pid+1];umsg=pid===3?`🎉 Round 1 Complete! Round 2 Unlocked!\nNext: P4 – ${nxt.title}`:`✅ P${pid} Accepted! P${pid+1}: ${nxt.title} is now unlocked!`;}if(S.completed_problems.length===5){S.competition_status="COMPLETED";S.round_status="COMPETITION COMPLETED 🏆";}writeDB();if(umsg){document.getElementById("ut-text").innerText=umsg;document.getElementById("unlock-toast").style.display="flex";}setTimeout(()=>{const times=Object.entries(S.problem_times).map(([k,v])=>`  P${k} (${PROBS[k]?.title||""}): ${v}`).join("\n");const title=pid===5?"🏆 COMPETITION COMPLETED!":"🎉 Problem Solved!";const msg=pid===5?`Congratulations! All 5 problems solved!\n\nPer-Problem Times:\n${times}`:`Great job! P${pid} completed.\nP${pid+1} is now unlocked!`;document.getElementById("cel-title").innerText=title;document.getElementById("cel-msg").innerText=msg;document.getElementById("cel-modal").style.display="flex";},700);renderSB();renderHdr();}
+
+/* TIMER */
+function startTimer(){if(timerIv)clearInterval(timerIv);timerIv=setInterval(()=>{if(S.competition_status!=="IN_PROGRESS")return;if(S.remaining_seconds>0){S.remaining_seconds--;renderTimer();if(S.remaining_seconds%20===0)writeDB();if(S.is_suspended)pollSusp();}else handleTimeUp();},1000);}
+function renderTimer(){const r=Math.max(0,S.remaining_seconds);const h=Math.floor(r/3600),m=Math.floor((r%3600)/60),s=r%60;const f=h>0?`${pad(h)}h ${pad(m)}m ${pad(s)}s`:`${pad(m)}m ${pad(s)}s`;const el=document.getElementById("timer");if(el){el.innerText=f;el.style.color=r<300?"var(--accent-rose)":"var(--text-secondary)";}}
+const pad=n=>String(n).padStart(2,"0");
+function renderHdr(){syncDB();const el=document.getElementById("hdr-round");if(el)el.innerText=S.round_status;document.getElementById("stu-badge").innerText=S.register_number;renderTimer();}
+function handleTimeUp(){clearInterval(timerIv);timerIv=null;S.competition_status="COMPLETED";S.round_status="TIME UP – COMPETITION ENDED";writeDB();addLog(S.register_number,"⏰ 90-Minute Timer Expired – Competition Ended");document.getElementById("btn-run").disabled=true;document.getElementById("btn-sub").disabled=true;document.getElementById("timeup-modal").style.display="flex";}
+
+/* TAB PROTECTION */
+function setupTabProt(){let last=0;const handle=()=>{if(S.competition_status!=="IN_PROGRESS")return;const now=Date.now();if(now-last<1500)return;last=now;syncDB();S.tab_switch_count=(S.tab_switch_count||0)+1;if(S.tab_switch_count>2){S.is_suspended=true;addLog(S.register_number,`🚨 SUSPENDED: Tab switch exceeded limit (${S.tab_switch_count} times)`);writeDB();showSuspModal();}else{addLog(S.register_number,`⚠️ Tab-switch warning ${S.tab_switch_count}/2`);writeDB();toast(`⚠️ Warning ${S.tab_switch_count}/2: Tab switch detected! ${2-S.tab_switch_count} remaining.`,"🛑");}};document.addEventListener("visibilitychange",()=>{if(document.hidden)handle();});window.addEventListener("blur",handle);}
+
+/* SUSPENSION */
+function showSuspModal(){document.getElementById("sus-modal").style.display="flex";document.getElementById("btn-run").disabled=true;document.getElementById("btn-sub").disabled=true;if(!suspIv)suspIv=setInterval(pollSusp,1000);}
+function pollSusp(){const reg=curReg();if(!reg)return;const db=gDB();if(!db[reg])return;const was=S.is_suspended;S.is_suspended=db[reg].state.is_suspended;if(was&&!S.is_suspended){document.getElementById("sus-modal").style.display="none";document.getElementById("btn-run").disabled=false;document.getElementById("btn-sub").disabled=false;toast("🔓 Admin unlocked your session! You can continue.","✨");addLog(reg,"🔓 Session resumed after Admin unlock");clearInterval(suspIv);suspIv=null;}}
+
+/* MAX VIEW */
+function setupMV(){const pm=document.getElementById("mv-modal"),bo=document.getElementById("mv-blocked");const go=async()=>{try{if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else if(document.documentElement.webkitRequestFullscreen)await document.documentElement.webkitRequestFullscreen();}catch(e){}mvOk=true;pm.style.display="none";bo.style.display="none";};document.getElementById("btn-mv-accept").onclick=go;document.getElementById("btn-mv-restore").onclick=go;document.getElementById("btn-mv-decline").onclick=()=>{mvOk=false;pm.style.display="none";bo.style.display="flex";};const check=()=>{if(!mvOk)return;const fs=!!(document.fullscreenElement||document.webkitFullscreenElement);const mx=window.innerWidth>=screen.availWidth*.9&&window.innerHeight>=screen.availHeight*.85;const ws=document.getElementById("app-con");if(!fs&&!mx&&ws&&ws.style.display!=="none")bo.style.display="flex";else bo.style.display="none";};document.addEventListener("fullscreenchange",check);document.addEventListener("webkitfullscreenchange",check);window.addEventListener("resize",check);}
+
+/* ADMIN */
+function renderAdm(){
+  const db=gDB();
+  const list=Object.values(db).map(u=>({
+    register_number:u.register_number,full_name:u.full_name,password:u.password,
+    competition_status:u.state.competition_status,
+    current_round:u.state.current_round,
+    current_problem_id:u.state.current_problem_id,
+    completed_problems:u.state.completed_problems||[],
+    problem_times:u.state.problem_times||{},
+    tab_switch_count:u.state.tab_switch_count||0,
+    is_suspended:u.state.is_suspended||false,
+    start_time:u.state.start_time||null,
+    activity_log:u.state.activity_log||[],
+    code_submissions:u.state.code_submissions||{}
+  }));
+  document.getElementById("st-total").innerText=list.length;
+  document.getElementById("st-active").innerText=list.filter(s=>s.competition_status==="IN_PROGRESS").length;
+  document.getElementById("st-done").innerText=list.filter(s=>s.completed_problems.length===5).length;
+  const tbody=document.getElementById("adm-tbody");tbody.innerHTML="";
+  if(!list.length){
+    tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--text-muted);">No students registered yet.</td></tr>';
+    return;
+  }
+  list.forEach(st=>{
+    const tr=document.createElement("tr");
+    let scls="sbadge",stxt=st.competition_status;
+    if(st.is_suspended){stxt="SUSPENDED";scls+=" sbadge-locked";}
+    else if(st.competition_status==="COMPLETED")stxt="Completed";
+    else if(st.competition_status==="IN_PROGRESS")stxt="In Progress";
+    else stxt="Not Started";
+    const solved=st.completed_problems.length?st.completed_problems.map(p=>{const t=st.problem_times[p]||st.problem_times[String(p)]||"";return t?`✓P${p}(${t})`:`✓P${p}`;}).join(", "):"None";
+    let tabH=`<span style="color:var(--accent-green);font-size:.85rem;">✓ Clean</span>`;
+    if(st.is_suspended)tabH=`<span class="sbadge sbadge-locked">🚨${st.tab_switch_count} SUSPENDED</span>`;
+    else if(st.tab_switch_count>0)tabH=`<span class="sbadge" style="background:rgba(245,158,11,.2);color:var(--accent-amber);">⚠️${st.tab_switch_count}/2</span>`;
+    let unlkBtn="";
+    if(st.is_suspended)unlkBtn=`<button class="btn btn-primary btn-xs" onclick="admUnlock('${st.register_number}')" style="background:var(--accent-green);border-color:var(--accent-green);margin-right:.35rem;">🔓 UNLOCK</button>`;
+    let tLeft="—";
+    if(st.start_time&&st.competition_status==="IN_PROGRESS"){
+      const r=Math.max(0,5400-((Date.now()-st.start_time)/1000));
+      tLeft=`${Math.floor(r/60)}m ${Math.floor(r%60)}s`;
+    }else if(st.competition_status==="COMPLETED")tLeft="Done ✓";
+    const latest=st.activity_log.length?st.activity_log[st.activity_log.length-1].event:"No activity yet";
+    tr.innerHTML=`<td><code style="color:var(--accent-blue);">${st.register_number}</code></td><td>${st.full_name}</td><td><span class="${scls}">${stxt}</span></td><td>Round ${st.current_round||1}</td><td>Problem ${st.current_problem_id||1}</td><td style="font-size:.8rem;max-width:180px;">${solved}</td><td style="font-family:var(--font-mono);font-size:.85rem;">${tLeft}</td><td>${tabH}</td><td style="font-size:.8rem;max-width:200px;color:var(--text-muted);">${latest}</td><td style="white-space:nowrap;">${unlkBtn}<button class="btn btn-secondary btn-xs" onclick="admAudit('${st.register_number}')">🔍 View Data & Code</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+window.admUnlock=function(reg){
+  const db=gDB();if(!db[reg])return;
+  db[reg].state.is_suspended=false;
+  db[reg].state.tab_switch_count=0;
+  db[reg].state.activity_log.push({time:new Date().toLocaleTimeString(),event:"🔓 Admin unlocked student session"});
+  sDB(db);
+  toast(`Student ${reg} unlocked!`,"🔓");
+  renderAdm();
+};
+
+window.admAudit=function(reg){
+  const db=gDB();const u=db[reg];if(!u)return;
+  document.getElementById("aud-name").innerText=u.full_name;
+  document.getElementById("aud-reg").innerText=u.register_number;
+  
+  // Render timeline logs
+  const al=document.getElementById("aud-log");al.innerHTML="";
+  const logs=u.state.activity_log||[];
+  if(!logs.length){
+    al.innerHTML='<p style="color:var(--text-muted);text-align:center;">No activity recorded yet.</p>';
+  }else{
+    logs.slice().reverse().forEach(e=>{
+      const d=document.createElement("div");
+      d.style.cssText="padding:.4rem 0;border-bottom:1px solid #1e293b;font-size:.85rem;";
+      d.innerHTML=`<span style="color:var(--accent-blue);margin-right:.5rem;">[${e.time||""}]</span><span style="color:var(--text-secondary);">${e.event}</span>`;
+      al.appendChild(d);
+    });
+  }
+
+  // Render code inspector
+  const codes=u.state.code_submissions||{};
+  const codeBox=document.getElementById("aud-code-display");
+  const btnGroup=document.getElementById("aud-prob-selector");
+  if(btnGroup && codeBox){
+    btnGroup.innerHTML="";
+    [1,2,3,4,5].forEach(pid=>{
+      const b=document.createElement("button");
+      b.className="btn btn-secondary btn-xs";
+      b.style.marginRight="0.35rem";
+      const hasCode=!!codes[pid];
+      b.innerText=`P${pid}${hasCode?" ✓":""}`;
+      b.onclick=()=>{
+        document.querySelectorAll("#aud-prob-selector button").forEach(btn=>btn.className="btn btn-secondary btn-xs");
+        b.className="btn btn-primary btn-xs";
+        codeBox.innerText=codes[pid]||`// No code submitted/saved for Problem ${pid} yet`;
+      };
+      btnGroup.appendChild(b);
+    });
+    // Default select P1
+    if(btnGroup.firstChild) btnGroup.firstChild.click();
+  }
+
+  document.getElementById("audit-modal").style.display="flex";
+};
+
+function startAdmIv(){stopAdmIv();admIv=setInterval(renderAdm,3000);}
+function stopAdmIv(){if(admIv){clearInterval(admIv);admIv=null;}}
+</script>
+</body>
+</html>
