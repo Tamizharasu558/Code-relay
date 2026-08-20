@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CODE RELAY - College Coding Competition & Admin Control Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #070a12;
+            --bg-card: #0f172a;
+            --bg-card-hover: #1e293b;
+            --border-color: #1e293b;
+            --border-glow: #38bdf8;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --accent-blue: #38bdf8;
+            --accent-blue-bg: rgba(56, 189, 248, 0.12);
+            --accent-green: #10b981;
+            --accent-green-bg: rgba(16, 185, 129, 0.12);
+            --accent-purple: #8b5cf6;
+            --accent-purple-bg: rgba(139, 92, 246, 0.12);
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Toast Container */
+        .toast-container {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 10000;
+        }
+        .global-toast {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--accent-blue);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.2);
+            backdrop-filter: blur(12px);
+            border-radius: 0.75rem;
+            padding: 0.85rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        /* Auth View Layout */
+        .auth-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            background: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.08) 0%, transparent 60%);
+        }
+        .auth-container {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .auth-brand { text-align: center; }
+        .auth-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+        }
+        .logo-icon { font-size: 2rem; color: var(--accent-blue); filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5)); }
+        .auth-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+
+        /* Role Switcher Tabs */
+        .auth-role-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            padding: 0.35rem;
+            border-radius: 0.75rem;
+            width: 100%;
+        }
+        .role-tab {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .role-tab:hover { color: #ffffff; background: rgba(255, 255, 255, 0.05); }
+        .role-tab.active { background: var(--accent-blue); color: #ffffff; font-weight: 700; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); }
+        .role-tab.active.admin-active { background: var(--accent-purple); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
+
+        /* Auth Card */
+        .auth-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        .auth-card-title { font-size: 1.35rem; font-weight: 700; color: #ffffff; }
+        .auth-card-desc { font-size: 0.875rem; color: var(--text-muted); }
+
+        .auth-error-banner {
+            background-color: rgba(244, 63, 94, 0.12);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-rose);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        form { display: flex; flex-direction: column; gap: 1.1rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+        .form-group label { font-size: 0.825rem; font-weight: 600; color: var(--text-secondary); }
+        .input-icon-wrapper { position: relative; display: flex; align-items: center; }
+        .input-icon { position: absolute; left: 0.85rem; color: var(--text-muted); pointer-events: none; font-size: 1rem; }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            color: #ffffff;
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+        .password-masked { -webkit-text-security: disc; text-security: disc; }
+
+        .btn-toggle-pwd {
+            position: absolute;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.25rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-primary { background-color: var(--accent-blue); color: #000000; font-weight: 700; }
+        .btn-primary:hover { background-color: #7dd3fc; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+        .btn-secondary { background-color: var(--bg-card-hover); color: var(--text-primary); border-color: var(--border-color); }
+        .btn-secondary:hover { background-color: #334155; }
+        .btn-danger-outline { background: transparent; color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.4); }
+        .btn-danger-outline:hover { background: rgba(244, 63, 94, 0.1); }
+        .btn-block { width: 100%; }
+        .btn-lg { padding: 0.85rem 1.5rem; font-size: 0.95rem; }
+        .btn-sm { padding: 0.4rem 0.85rem; font-size: 0.8rem; }
+        .btn-xs { padding: 0.25rem 0.6rem; font-size: 0.75rem; border-radius: 0.35rem; }
+
+        .auth-footer-link { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
+        .link-btn { background: none; border: none; color: var(--accent-blue); font-weight: 600; cursor: pointer; text-decoration: underline; margin-left: 0.25rem; }
+
+        /* Dashboard Layout */
+        .dashboard-wrapper { min-height: 100vh; padding: 2rem 1.5rem; max-width: 1100px; margin: 0 auto; width: 100%; }
+        .dashboard-container { display: flex; flex-direction: column; gap: 2rem; }
+        .dash-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; }
+        .welcome-tag { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-blue); }
+        .welcome-title { font-size: 2rem; font-weight: 800; color: #ffffff; }
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .dash-card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.85rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+        .dash-card-header { display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; }
+        .dash-card-header h3 { font-size: 1.1rem; font-weight: 700; color: #ffffff; }
+        .dash-card-body { display: flex; flex-direction: column; gap: 0.85rem; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+        .info-label { color: var(--text-muted); }
+        .info-value { font-weight: 600; color: #ffffff; }
+        .info-value.highlight { font-family: var(--font-mono); color: var(--accent-blue); background-color: var(--accent-blue-bg); padding: 0.15rem 0.5rem; border-radius: 0.25rem; }
+
+        .status-badge { background-color: var(--accent-green-bg); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.2rem 0.65rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 700; }
+        .status-locked { background-color: rgba(244, 63, 94, 0.12); color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.3); }
+        .status-unlocked { background-color: var(--accent-blue-bg); color: var(--accent-blue); border-color: rgba(56, 189, 248, 0.3); }
+        .status-completed { background-color: var(--accent-green-bg); color: var(--accent-green); border-color: rgba(16, 185, 129, 0.3); }
+
+        .dash-action-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+            border: 1px solid var(--border-glow);
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.15);
+            border-radius: 1rem;
+            padding: 2rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        .action-info h2 { font-size: 1.35rem; font-weight: 800; color: #ffffff; }
+        .action-info p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.35rem; }
+
+        /* Workspace & Navigation Layout */
+        .app-header { height: 60px; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; }
+        .header-brand { display: flex; align-items: center; gap: 1rem; }
+        .header-status { display: flex; align-items: center; gap: 1rem; }
+        .system-badge { font-size: 0.75rem; font-weight: 700; font-family: var(--font-mono); background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); padding: 0.2rem 0.5rem; border-radius: 0.35rem; }
+
+        .status-chip { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border-radius: 9999px; font-size: 0.825rem; font-weight: 600; }
+        .round-chip { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.3); }
+        .timer-chip { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-glow); font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; }
+        .chip-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-purple); box-shadow: 0 0 8px var(--accent-purple); }
+
+        .app-container { flex: 1; display: flex; height: calc(100vh - 60px); overflow: hidden; }
+        .sidebar { width: 280px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 1.25rem 1rem 0.75rem 1rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-title { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); }
+        .sidebar-subtitle { font-size: 0.75rem; color: var(--text-muted); }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .nav-item {
+            padding: 0.85rem 1rem;
+            border-radius: 0.6rem;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .nav-item:hover { background-color: var(--bg-card-hover); }
+        .nav-item.active { background-color: var(--accent-blue-bg); border-color: rgba(56, 189, 248, 0.4); }
+        .nav-item.locked { opacity: 0.5; cursor: not-allowed; }
+        .nav-item.completed { border-color: rgba(16, 185, 129, 0.3); }
+
+        .workspace { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 1.5rem; gap: 1.5rem; background: var(--bg-dark); }
+        .problem-container { display: flex; flex-direction: column; gap: 1.5rem; max-width: 1000px; margin: 0 auto; width: 100%; }
+
+        .problem-header-bar { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; }
+        .problem-num-badge { font-size: 0.75rem; font-weight: 700; font-family: var(--font-mono); color: var(--accent-blue); text-transform: uppercase; }
+        .problem-title { font-size: 1.75rem; font-weight: 800; color: #ffffff; }
+        .difficulty-badge { font-size: 0.75rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 0.25rem; text-transform: uppercase; margin-left: 0.5rem; }
+        .difficulty-badge.easy { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .difficulty-badge.medium { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
+
+        .statement-section { display: flex; flex-direction: column; gap: 0.5rem; }
+        .section-heading { font-size: 0.95rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 0.04em; }
+        .statement-text { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; }
+        .statement-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .format-box, .code-box, .sample-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.85rem 1rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary); }
+
+        .samples-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .sample-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+        .btn-copy { background: none; border: none; color: var(--accent-blue); cursor: pointer; font-size: 0.75rem; font-weight: 600; }
+
+        /* Code Editor */
+        .editor-section { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.85rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+        .editor-header { display: flex; justify-content: space-between; align-items: center; }
+        .editor-title { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 0.9rem; color: #ffffff; }
+        .editor-lang-icon { background: var(--accent-blue); color: #000; font-weight: 800; width: 22px; height: 22px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+        .compiler-badge { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); }
+
+        .editor-wrapper { display: flex; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 0.5rem; min-height: 220px; overflow: hidden; }
+        .line-numbers { padding: 0.85rem 0.5rem; background: rgba(15, 23, 42, 0.5); border-right: 1px solid var(--border-color); color: var(--text-muted); font-family: var(--font-mono); font-size: 0.85rem; text-align: right; user-select: none; min-width: 35px; }
+        .code-textarea { flex: 1; background: transparent; border: none; padding: 0.85rem 1rem; color: #f8fafc; font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.5; resize: vertical; outline: none; white-space: pre; }
+
+        .editor-actions { display: flex; justify-content: flex-end; gap: 0.85rem; margin-top: 0.5rem; }
+
+        /* Console Output Section */
+        .console-section { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.85rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+        .verdict-banner { padding: 0.75rem 1rem; border-radius: 0.5rem; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; }
+        .verdict-accepted { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--accent-green); }
+        .verdict-wrong { background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.4); color: var(--accent-rose); }
+        .verdict-compile { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--accent-amber); }
+        .console-output { background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary); max-height: 200px; overflow-y: auto; white-space: pre-wrap; }
+        .stderr-text { color: var(--accent-rose); margin-top: 0.5rem; }
+
+        /* Admin Dashboard View */
+        .admin-wrapper { min-height: 100vh; width: 100%; display: flex; flex-direction: column; background: var(--bg-dark); }
+        .admin-container { padding: 2rem; max-width: 1400px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 2rem; }
+        .admin-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.85rem; padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem; }
+        .stat-icon { font-size: 2.25rem; }
+        .stat-value { font-size: 2rem; font-weight: 800; color: #ffffff; font-family: var(--font-mono); }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+
+        .admin-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+        .admin-panel-header h2 { font-size: 1.25rem; font-weight: 800; color: #ffffff; }
+        .panel-subtitle { font-size: 0.85rem; color: var(--text-muted); }
+
+        .table-wrapper { overflow-x: auto; }
+        .admin-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
+        .admin-table th { background: rgba(15, 23, 42, 0.8); color: var(--text-muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-color); }
+        .admin-table td { padding: 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); }
+        .admin-table tr:hover { background: rgba(30, 41, 59, 0.5); }
+
+        /* Modals */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(5, 8, 15, 0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
+        .modal-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 1rem; padding: 2rem; max-width: 500px; width: 100%; display: flex; flex-direction: column; gap: 1.5rem; text-align: center; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6); }
+        .modal-title { font-size: 1.4rem; font-weight: 800; color: #ffffff; }
+        .modal-message { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; }
+        .modal-footer { display: flex; justify-content: center; gap: 1rem; }
+        .btn-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="global-toast-container" style="display: none;">
+        <div class="global-toast" id="global-toast">
+            <span class="toast-icon" id="global-toast-icon">✨</span>
+            <span class="toast-message" id="global-toast-msg">Welcome to Code Relay Platform.</span>
+        </div>
+    </div>
+
+    <!-- =================================================== -->
+    <!-- 1. AUTHENTICATION VIEW (STUDENT 1ST & ADMIN TAB NEXT TO IT) -->
+    <!-- =================================================== -->
+    <div class="auth-wrapper" id="auth-view" style="display: flex;">
+        <div class="auth-container">
+            <div class="auth-brand">
+                <div class="auth-logo">
+                    <span class="logo-icon">⚡</span>
+                    <span class="logo-text">CODE RELAY</span>
+                </div>
+                <p class="auth-subtitle">College Coding Competition Platform</p>
+            </div>
+
+            <!-- ROLE SWITCHER TABS (STUDENT 1ST, ADMIN NEXT TO IT) -->
+            <div class="auth-role-tabs">
+                <button type="button" class="role-tab active" id="tab-btn-student">
+                    <span>🎓</span> Student Login
+                </button>
+                <button type="button" class="role-tab" id="tab-btn-admin">
+                    <span>🛡️</span> Admin Login
+                </button>
+            </div>
+
+            <!-- STUDENT LOGIN CARD (1ST DEFAULT) -->
+            <div class="auth-card" id="login-box">
+                <h2 class="auth-card-title">Student Login</h2>
+                <p class="auth-card-desc">Enter your Register Number & Password to access the competition arena.</p>
+
+                <div class="auth-error-banner" id="login-error-banner" style="display: none;">
+                    <span class="error-icon">⚠️</span>
+                    <span id="login-error-text">Invalid credentials</span>
+                </div>
+
+                <form id="form-login" onsubmit="return false;" autocomplete="off">
+                    <div class="form-group">
+                        <label for="login-reg-no">Register Number</label>
+                        <div class="input-icon-wrapper">
+                            <span class="input-icon">💳</span>
+                            <input type="text" id="login-reg-no" placeholder="e.g. REG1001" autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <div class="input-icon-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="text" id="login-password" class="password-masked" placeholder="Enter password" autocomplete="off" required>
+                            <button type="button" class="btn-toggle-pwd" id="btn-toggle-login-pwd" title="Show/Hide Password">👁️</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-login-submit">
+                        <span class="btn-text">Login to Dashboard</span>
+                    </button>
+                </form>
+
+                <div class="auth-footer-link">
+                    <span>New Student?</span>
+                    <button type="button" class="link-btn" id="link-to-register">Register Account</button>
+                </div>
+            </div>
+
+            <!-- ADMIN LOGIN CARD (NEXT TO STUDENT LOGIN) -->
+            <div class="auth-card" id="admin-login-box" style="display: none;">
+                <h2 class="auth-card-title" style="color: var(--accent-purple);">Admin Control Portal</h2>
+                <p class="auth-card-desc">Enter admin credentials to monitor live student activity.</p>
+
+                <div class="auth-error-banner" id="admin-error-banner" style="display: none;">
+                    <span class="error-icon">⚠️</span>
+                    <span id="admin-error-text">Invalid admin credentials</span>
+                </div>
+
+                <form id="form-admin-direct-login" onsubmit="return false;" autocomplete="off">
+                    <div class="form-group">
+                        <label for="admin-user-input">Admin Username</label>
+                        <div class="input-icon-wrapper">
+                            <span class="input-icon">🛡️</span>
+                            <input type="text" id="admin-user-input" placeholder="e.g. AdminCSE" autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="admin-pass-input">Admin Password</label>
+                        <div class="input-icon-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="admin-pass-input" placeholder="Enter admin password" autocomplete="off" required>
+                            <button type="button" class="btn-toggle-pwd" id="btn-toggle-admin-pwd" title="Show/Hide Password">👁️</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-admin-submit" style="background-color: var(--accent-purple); border-color: var(--accent-purple); margin-top: 1rem;">
+                        <span class="btn-text">🛡️ Access Admin Control Portal</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- STUDENT REGISTRATION CARD -->
+            <div class="auth-card" id="register-box" style="display: none;">
+                <h2 class="auth-card-title">Student Registration</h2>
+                <p class="auth-card-desc">Create your student account to participate.</p>
+
+                <div class="auth-error-banner" id="register-error-banner" style="display: none;">
+                    <span class="error-icon">⚠️</span>
+                    <span id="register-error-text">Registration error</span>
+                </div>
+
+                <form id="form-register" onsubmit="return false;" autocomplete="off">
+                    <div class="form-group">
+                        <label for="reg-fullname">Full Name</label>
+                        <div class="input-icon-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="reg-fullname" placeholder="e.g. Sarah Jenkins" autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg-num">Register Number</label>
+                        <div class="input-icon-wrapper">
+                            <span class="input-icon">💳</span>
+                            <input type="text" id="reg-num" placeholder="e.g. REG202601" autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg-password">Password</label>
+                        <div class="input-icon-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="text" id="reg-password" class="password-masked" placeholder="Min 4 chars" autocomplete="off" required>
+                            <button type="button" class="btn-toggle-pwd" id="btn-toggle-reg-pwd" title="Show/Hide Password">👁️</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-register-submit">
+                        <span class="btn-text">Create Account & Continue</span>
+                    </button>
+                </form>
+
+                <div class="auth-footer-link">
+                    <span>Already registered?</span>
+                    <button type="button" class="link-btn" id="link-to-login">Login Here</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================== -->
+    <!-- 2. STUDENT DASHBOARD VIEW                           -->
+    <!-- =================================================== -->
+    <div class="dashboard-wrapper" id="dashboard-view" style="display: none;">
+        <div class="dashboard-container">
+            <div class="dash-header">
+                <div class="dash-welcome">
+                    <span class="welcome-tag">Student Dashboard</span>
+                    <h1 class="welcome-title" id="dash-greeting">Welcome, Student!</h1>
+                    <p class="welcome-subtitle">CODE RELAY - College Coding Competition</p>
+                </div>
+                <button class="btn btn-danger-outline" id="btn-dash-logout">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+
+            <div class="dash-grid">
+                <div class="dash-card profile-card">
+                    <div class="dash-card-header">
+                        <span class="dash-card-icon">👤</span>
+                        <h3>Student Profile</h3>
+                    </div>
+                    <div class="dash-card-body">
+                        <div class="info-row">
+                            <span class="info-label">Full Name:</span>
+                            <span class="info-value" id="dash-student-name">--</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Register Number:</span>
+                            <span class="info-value highlight" id="dash-reg-no">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dash-card status-card">
+                    <div class="dash-card-header">
+                        <span class="dash-card-icon">⚡</span>
+                        <h3>Competition Status</h3>
+                    </div>
+                    <div class="dash-card-body">
+                        <div class="info-row">
+                            <span class="info-label">Status:</span>
+                            <span class="status-badge" id="dash-comp-status">Ready to Start</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Current Round:</span>
+                            <span class="info-value" id="dash-current-round">Round 1</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Problems Solved:</span>
+                            <span class="info-value" id="dash-problems-solved">0 / 5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dash-action-card">
+                <div class="action-info">
+                    <h2>Ready to Challenge Yourself?</h2>
+                    <p>Click below to enter the live competition arena. Sequential problem unlocking begins from Round 1, Problem 1.</p>
+                </div>
+                <button class="btn btn-primary btn-cta-xl" id="btn-start-competition">
+                    <span class="cta-icon">🚀</span> Start Competition
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================== -->
+    <!-- 3. COMPETITION WORKSPACE VIEW                       -->
+    <!-- =================================================== -->
+    <header class="app-header" id="app-header" style="display: none;">
+        <div class="header-brand">
+            <div class="brand-logo" id="brand-logo-btn" style="cursor: pointer;" title="Return to Dashboard">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">CODE RELAY</span>
+            </div>
+            <span class="system-badge" id="student-tag-badge">REG1001</span>
+        </div>
+
+        <div class="header-status">
+            <div class="status-chip round-chip" id="round-status-chip">
+                <span class="chip-dot"></span>
+                <span id="header-round-text">ROUND 1 IN PROGRESS</span>
+            </div>
+            <div class="status-chip timer-chip">
+                <span class="timer-icon">⏳</span>
+                <span id="timer-display">01h 30m 00s</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-container" id="app-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3 class="sidebar-title">Problem Navigation</h3>
+                <span class="sidebar-subtitle">Strict Sequential Unlocking</span>
+            </div>
+            <div class="sidebar-content" id="sidebar-navigation"></div>
+        </aside>
+
+        <main class="workspace" id="main-workspace">
+            <div class="problem-container" id="problem-view">
+                <div class="problem-header-bar">
+                    <div class="problem-identity">
+                        <span class="problem-num-badge" id="prob-num-badge">PROBLEM 1</span>
+                        <h1 class="problem-title" id="prob-title">Second Largest Element</h1>
+                        <span class="difficulty-badge medium" id="prob-difficulty">Medium</span>
+                    </div>
+                </div>
+
+                <div class="problem-statement">
+                    <div class="statement-section">
+                        <h3 class="section-heading">Problem Description</h3>
+                        <p class="statement-text" id="prob-description">Given N integers, calculate and print the second largest element.</p>
+                    </div>
+
+                    <div class="statement-grid">
+                        <div class="statement-section">
+                            <h3 class="section-heading">Input Format</h3>
+                            <div class="format-box" id="prob-input-format">First line N. Second line N integers.</div>
+                        </div>
+                        <div class="statement-section">
+                            <h3 class="section-heading">Output Format</h3>
+                            <div class="format-box" id="prob-output-format">Print the second largest integer.</div>
+                        </div>
+                    </div>
+
+                    <div class="statement-section">
+                        <h3 class="section-heading">Constraints</h3>
+                        <div class="code-box" id="prob-constraints">1 ≤ N ≤ 100000</div>
+                    </div>
+
+                    <div class="samples-container">
+                        <div class="sample-block">
+                            <div class="sample-header"><span>Sample Input</span></div>
+                            <pre class="sample-box" id="prob-sample-input">5\n10 20 30 40 50</pre>
+                        </div>
+                        <div class="sample-block">
+                            <div class="sample-header"><span>Sample Output</span></div>
+                            <pre class="sample-box" id="prob-sample-output">40</pre>
+                        </div>
+                    </div>
+
+                    <div class="statement-section">
+                        <h3 class="section-heading">Explanation</h3>
+                        <p class="statement-text" id="prob-explanation">40 is the second largest.</p>
+                    </div>
+                </div>
+
+                <div class="editor-section">
+                    <div class="editor-header">
+                        <div class="editor-title">
+                            <span class="editor-lang-icon">C</span>
+                            <span>C CODE EDITOR</span>
+                            <span class="compiler-badge">GCC / Clang Engine</span>
+                        </div>
+                        <button class="btn btn-secondary btn-xs" id="btn-reset-code">Reset Code</button>
+                    </div>
+
+                    <div class="editor-wrapper">
+                        <div class="line-numbers" id="line-numbers">1</div>
+                        <textarea class="code-textarea" id="code-editor" spellcheck="false" placeholder="Write C code here..."></textarea>
+                    </div>
+
+                    <div class="custom-input-container" style="margin-top: 1rem;">
+                        <div style="font-weight: 600; font-size: 0.85rem; color: var(--accent-blue); margin-bottom: 0.35rem;">📥 TEST INPUT (RUN CODE)</div>
+                        <textarea id="custom-input-text" class="code-textarea" style="height: 65px;" placeholder="Enter custom test input..."></textarea>
+                    </div>
+
+                    <div class="editor-actions">
+                        <button class="btn btn-secondary" id="btn-run-code">▶ Run Code</button>
+                        <button class="btn btn-primary" id="btn-submit-code">🚀 Submit Code</button>
+                    </div>
+                </div>
+
+                <div class="console-section" id="console-section" style="display: none;">
+                    <div class="verdict-banner" id="verdict-banner">
+                        <span class="verdict-tag" id="verdict-tag">Verdict: Accepted</span>
+                        <span class="exec-time" id="exec-time">Execution Time: 0.01 seconds</span>
+                    </div>
+                    <div class="console-output" id="console-output-box">
+                        <pre id="console-stdout"></pre>
+                        <pre id="console-stderr" class="stderr-text"></pre>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- =================================================== -->
+    <!-- 4. ADMIN CONTROL PORTAL DASHBOARD VIEW               -->
+    <!-- (NO STUDENT VIEW LINK OR BUTTONS!)                  -->
+    <!-- =================================================== -->
+    <div class="admin-wrapper" id="admin-view" style="display: none;">
+        <header class="app-header">
+            <div class="header-brand">
+                <div class="brand-logo">
+                    <span class="logo-icon">🛡️</span>
+                    <span class="logo-text">ADMIN CONTROL PORTAL</span>
+                </div>
+                <span class="system-badge" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-purple);">Master Overview</span>
+            </div>
+            <div class="header-status">
+                <button class="btn btn-secondary btn-sm" id="btn-admin-refresh">🔄 Refresh Data</button>
+                <button class="btn btn-danger-outline btn-sm" id="btn-admin-logout">🚪 Logout</button>
+            </div>
+        </header>
+
+        <div class="admin-container">
+            <div class="admin-stats-grid">
+                <div class="stat-card">
+                    <span class="stat-icon">👥</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-total-students">0</span>
+                        <span class="stat-label">Registered Students</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">⚡</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-active-students" style="color: var(--accent-blue);">0</span>
+                        <span class="stat-label">Active Competitors</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">🏆</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-completed-students" style="color: var(--accent-green);">0</span>
+                        <span class="stat-label">Completed All Problems</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <h2>📊 Live Student Process & Progress Monitor</h2>
+                    <span class="panel-subtitle">Real-time status tracking for competing students</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Reg Number</th>
+                                <th>Student Name</th>
+                                <th>Status</th>
+                                <th>Round</th>
+                                <th>Problem</th>
+                                <th>Completed & Times</th>
+                                <th>Time Remaining</th>
+                                <th>Tab Violations</th>
+                                <th>Latest Activity</th>
+                                <th>Admin Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-students-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-backdrop" id="celebration-modal" style="display: none;">
+        <div class="modal-card">
+            <div style="font-size: 3rem;">🎉</div>
+            <h2 class="modal-title" id="modal-title">Round Completed!</h2>
+            <p class="modal-message" id="modal-message">Congratulations!</p>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-lg" id="btn-modal-continue">Continue to Next Round</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="tab-suspended-modal" style="display: none; z-index: 10000;">
+        <div class="modal-card" style="border: 2px solid var(--accent-rose);">
+            <div style="font-size: 3rem;">🚨</div>
+            <h2 class="modal-title" style="color: var(--accent-rose);">COMPETITION SUSPENDED</h2>
+            <p class="modal-message">
+                Your session is suspended due to tab-switching violations. Please notify your invigilator or administrator.
+            </p>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="admin-process-modal" style="display: none;">
+        <div class="modal-card" style="max-width: 650px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>🔍 Student Activity Audit</h2>
+                <button class="btn-close" id="btn-close-admin-modal">&times;</button>
+            </div>
+            <div style="margin-top: 1rem;">
+                <p>Student: <strong id="audit-student-name">--</strong> (<span id="audit-reg-num">--</span>)</p>
+                <div id="audit-log-list" style="margin-top: 1rem; max-height: 300px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================== -->
+    <!-- COMPLETE STANDALONE CLIENT SCRIPT                   -->
+    <!-- =================================================== -->
+    <script>
+        // System Databases & Storage Simulation
+        const PROBLEMS = {
+            1: {
+                id: 1, round: 1, number: 1, title: "Second Largest Element", difficulty: "Medium",
+                description: "Given N integers, calculate and print the second largest element.",
+                input_format: "First line N. Second line N space-separated integers.",
+                output_format: "Print the second largest integer.",
+                constraints: "1 ≤ N ≤ 100000",
+                sample_input: "5\n10 20 30 40 50", sample_output: "40",
+                explanation: "Second largest element is 40.",
+                template: "#include <stdio.h>\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    int arr[n];\n    for(int i = 0; i < n; i++) {\n        scanf(\"%d\", &arr[i]);\n    }\n    int first = -1e9, second = -1e9;\n    for(int i = 0; i < n; i++) {\n        if(arr[i] > first) {\n            second = first;\n            first = arr[i];\n        } else if(arr[i] > second && arr[i] != first) {\n            second = arr[i];\n        }\n    }\n    printf(\"%d\\n\", second);\n    return 0;\n}",
+                solve: function(inp) {
+                    const nums = inp.trim().split(/\s+/).map(Number).slice(1);
+                    if (nums.length < 2) return "N/A";
+                    let first = -Infinity, second = -Infinity;
+                    for (let x of nums) {
+                        if (x > first) { second = first; first = x; }
+                        else if (x > second && x !== first) { second = x; }
+                    }
+                    return String(second);
+                }
+            },
+            2: {
+                id: 2, round: 1, number: 2, title: "Palindrome Number", difficulty: "Easy",
+                description: "Given an integer N, check if it is a palindrome.",
+                input_format: "A single integer N.", output_format: "Print YES if palindrome, else NO.",
+                constraints: "-10^9 ≤ N ≤ 10^9",
+                sample_input: "121", sample_output: "YES", explanation: "121 read backwards is 121.",
+                template: "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s[100];\n    if (scanf(\"%s\", s) != 1) return 0;\n    int len = strlen(s);\n    int isPal = 1;\n    for(int i = 0; i < len / 2; i++) {\n        if(s[i] != s[len - 1 - i]) { isPal = 0; break; }\n    }\n    if(isPal) printf(\"YES\\n\"); else printf(\"NO\\n\");\n    return 0;\n}",
+                solve: function(inp) {
+                    const str = inp.trim();
+                    const rev = str.split("").reverse().join("");
+                    return str === rev ? "YES" : "NO";
+                }
+            },
+            3: {
+                id: 3, round: 1, number: 3, title: "Character Frequency", difficulty: "Easy",
+                description: "Count occurrence of character C in string S.",
+                input_format: "String S followed by character C.", output_format: "Count of character C.",
+                constraints: "1 ≤ |S| ≤ 1000", sample_input: "hello l", sample_output: "2", explanation: "'l' appears twice.",
+                template: "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char str[1000], c;\n    if (scanf(\"%s %c\", str, &c) != 2) return 0;\n    int count = 0;\n    for(int i = 0; i < strlen(str); i++) {\n        if(str[i] == c) count++;\n    }\n    printf(\"%d\\n\", count);\n    return 0;\n}",
+                solve: function(inp) {
+                    const parts = inp.trim().split(/\s+/);
+                    if (parts.length < 2) return "0";
+                    const str = parts[0], ch = parts[1];
+                    let cnt = 0;
+                    for (let c of str) { if (c === ch) cnt++; }
+                    return String(cnt);
+                }
+            },
+            4: {
+                id: 4, round: 2, number: 4, title: "Find the Missing Number", difficulty: "Medium",
+                description: "Given N-1 distinct integers from 1 to N, find the missing integer.",
+                input_format: "First line N. Second line N-1 integers.", output_format: "The missing integer.",
+                constraints: "1 ≤ N ≤ 100000", sample_input: "5\n1 2 4 5", sample_output: "3", explanation: "3 is missing.",
+                template: "#include <stdio.h>\n\nint main() {\n    long long n, sum = 0, val;\n    if (scanf(\"%lld\", &n) != 1) return 0;\n    for(int i = 0; i < n - 1; i++) {\n        scanf(\"%lld\", &val);\n        sum += val;\n    }\n    long long total = (n * (n + 1)) / 2;\n    printf(\"%lld\\n\", total - sum);\n    return 0;\n}",
+                solve: function(inp) {
+                    const nums = inp.trim().split(/\s+/).map(Number);
+                    const n = nums[0];
+                    const arr = nums.slice(1);
+                    const total = (n * (n + 1)) / 2;
+                    const sum = arr.reduce((a, b) => a + b, 0);
+                    return String(total - sum);
+                }
+            },
+            5: {
+                id: 5, round: 2, number: 5, title: "Find Duplicate Number", difficulty: "Medium",
+                description: "Given array of N+1 integers where each is between 1 and N, find the duplicate.",
+                input_format: "First line N. Second line N+1 integers.", output_format: "The duplicate number.",
+                constraints: "1 ≤ N ≤ 100000", sample_input: "5\n1 3 4 2 2", sample_output: "2", explanation: "2 is duplicated.",
+                template: "#include <stdio.h>\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    int freq[100001] = {0}, val;\n    for(int i = 0; i <= n; i++) {\n        scanf(\"%d\", &val);\n        if(freq[val] > 0) {\n            printf(\"%d\\n\", val);\n            break;\n        }\n        freq[val]++;\n    }\n    return 0;\n}",
+                solve: function(inp) {
+                    const nums = inp.trim().split(/\s+/).map(Number).slice(1);
+                    const seen = new Set();
+                    for (let x of nums) {
+                        if (seen.has(x)) return String(x);
+                        seen.add(x);
+                    }
+                    return "None";
+                }
+            }
+        };
+
+        // State Manager
+        let currentUser = null;
+        let activeProblemId = 1;
+        let timerInterval = null;
+        let suspensionInterval = null;
+
+        function getDBUsers() { return JSON.parse(localStorage.getItem("code_relay_users") || "{}"); }
+        function saveDBUsers(users) { localStorage.setItem("code_relay_users", JSON.stringify(users)); }
+
+        function showToast(msg, icon = "✨") {
+            const container = document.getElementById("global-toast-container");
+            document.getElementById("global-toast-msg").innerText = msg;
+            document.getElementById("global-toast-icon").innerText = icon;
+            container.style.display = "block";
+            setTimeout(() => { container.style.display = "none"; }, 3500);
+        }
+
+        function showView(viewName) {
+            localStorage.setItem("code_relay_active_view", viewName);
+            document.getElementById("auth-view").style.display = viewName === "auth" ? "flex" : "none";
+            document.getElementById("dashboard-view").style.display = viewName === "dashboard" ? "flex" : "none";
+            document.getElementById("app-header").style.display = viewName === "workspace" ? "flex" : "none";
+            document.getElementById("app-container").style.display = viewName === "workspace" ? "flex" : "none";
+            document.getElementById("admin-view").style.display = viewName === "admin" ? "block" : "none";
+
+            if (viewName === "admin") { renderAdminDashboard(); }
+        }
+
+        // Init & Auth
+        document.addEventListener("DOMContentLoaded", () => {
+            setupHandlers();
+            checkSession();
+        });
+
+        function checkSession() {
+            const adminToken = localStorage.getItem("code_relay_admin_token");
+            if (adminToken) { showView("admin"); return; }
+
+            const userReg = localStorage.getItem("code_relay_current_user");
+            if (userReg) {
+                const users = getDBUsers();
+                if (users[userReg]) {
+                    currentUser = users[userReg];
+                    const savedView = localStorage.getItem("code_relay_active_view");
+                    const st = currentUser.state;
+                    if (st.competition_status === "IN_PROGRESS" || savedView === "workspace") {
+                        showView("workspace");
+                        loadProblem(parseInt(localStorage.getItem("code_relay_active_problem")) || st.current_problem_id || 1);
+                        startTimer();
+                    } else {
+                        showView("dashboard");
+                        renderDashboard();
+                    }
+                    return;
+                }
+            }
+            showView("auth");
+        }
+
+        function setupHandlers() {
+            // Role Switcher
+            const tabStudent = document.getElementById("tab-btn-student");
+            const tabAdmin = document.getElementById("tab-btn-admin");
+            tabStudent.addEventListener("click", () => {
+                tabStudent.className = "role-tab active";
+                tabAdmin.className = "role-tab";
+                document.getElementById("login-box").style.display = "flex";
+                document.getElementById("admin-login-box").style.display = "none";
+                document.getElementById("register-box").style.display = "none";
+            });
+            tabAdmin.addEventListener("click", () => {
+                tabAdmin.className = "role-tab active admin-active";
+                tabStudent.className = "role-tab";
+                document.getElementById("login-box").style.display = "none";
+                document.getElementById("admin-login-box").style.display = "flex";
+                document.getElementById("register-box").style.display = "none";
+            });
+
+            document.getElementById("link-to-register").addEventListener("click", () => {
+                document.getElementById("login-box").style.display = "none";
+                document.getElementById("register-box").style.display = "flex";
+            });
+            document.getElementById("link-to-login").addEventListener("click", () => {
+                document.getElementById("register-box").style.display = "none";
+                document.getElementById("login-box").style.display = "flex";
+            });
+
+            // Logins
+            document.getElementById("form-login").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const regNo = document.getElementById("login-reg-no").value.trim().toUpperCase();
+                const pwd = document.getElementById("login-password").value;
+                const users = getDBUsers();
+                if (users[regNo] && users[regNo].password === pwd) {
+                    currentUser = users[regNo];
+                    localStorage.setItem("code_relay_current_user", regNo);
+                    logActivity(regNo, "Logged into Student Portal");
+                    showToast(`Welcome back, ${currentUser.full_name}!`, "👋");
+                    showView("dashboard");
+                    renderDashboard();
+                } else {
+                    document.getElementById("login-error-text").innerText = "Invalid Register Number or Password.";
+                    document.getElementById("login-error-banner").style.display = "flex";
+                }
+            });
+
+            document.getElementById("form-register").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const name = document.getElementById("reg-fullname").value.trim();
+                const regNo = document.getElementById("reg-num").value.trim().toUpperCase();
+                const pwd = document.getElementById("reg-password").value;
+                const users = getDBUsers();
+                if (users[regNo]) {
+                    document.getElementById("register-error-text").innerText = "Register Number already exists.";
+                    document.getElementById("register-error-banner").style.display = "flex";
+                    return;
+                }
+                users[regNo] = {
+                    register_number: regNo, full_name: name, password: pwd,
+                    state: {
+                        current_problem_id: 1, completed_problems: [], problem_times: {},
+                        current_round: 1, competition_status: "NOT_STARTED",
+                        start_time: null, tab_switch_count: 0, is_suspended: false,
+                        activity_log: [{ time: new Date().toLocaleTimeString(), event: "Registered Account" }]
+                    }
+                };
+                saveDBUsers(users);
+                currentUser = users[regNo];
+                localStorage.setItem("code_relay_current_user", regNo);
+                showToast("Account created successfully!", "🎉");
+                showView("dashboard");
+                renderDashboard();
+            });
+
+            document.getElementById("form-admin-direct-login").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const u = document.getElementById("admin-user-input").value.trim();
+                const p = document.getElementById("admin-pass-input").value.trim();
+                if ((u.toLowerCase() === "admincse" || u.toLowerCase() === "admin") && (p === "AdminCSE057" || p === "123456")) {
+                    localStorage.setItem("code_relay_admin_token", "ADMIN_SESSION_TOKEN");
+                    showToast("Welcome to Admin Control Portal!", "🛡️");
+                    showView("admin");
+                } else {
+                    document.getElementById("admin-error-text").innerText = "Invalid Admin Credentials.";
+                    document.getElementById("admin-error-banner").style.display = "flex";
+                }
+            });
+
+            document.getElementById("btn-dash-logout").addEventListener("click", () => {
+                localStorage.removeItem("code_relay_current_user");
+                currentUser = null;
+                showView("auth");
+            });
+
+            document.getElementById("btn-admin-logout").addEventListener("click", () => {
+                localStorage.removeItem("code_relay_admin_token");
+                showView("auth");
+            });
+            document.getElementById("btn-admin-refresh").addEventListener("click", renderAdminDashboard);
+
+            document.getElementById("btn-start-competition").addEventListener("click", startCompetition);
+            document.getElementById("brand-logo-btn").addEventListener("click", () => {
+                showView("dashboard"); renderDashboard();
+            });
+
+            document.getElementById("btn-run-code").addEventListener("click", () => executeCode(false));
+            document.getElementById("btn-submit-code").addEventListener("click", () => executeCode(true));
+            document.getElementById("btn-reset-code").addEventListener("click", () => {
+                const editor = document.getElementById("code-editor");
+                editor.value = PROBLEMS[activeProblemId].template;
+                localStorage.removeItem("code_relay_draft_" + activeProblemId);
+            });
+
+            document.getElementById("btn-modal-continue").addEventListener("click", () => {
+                document.getElementById("celebration-modal").style.display = "none";
+                loadProblem(currentUser.state.current_problem_id);
+            });
+            document.getElementById("btn-close-admin-modal").addEventListener("click", () => {
+                document.getElementById("admin-process-modal").style.display = "none";
+            });
+
+            // Anti-cheat tab switch monitoring
+            document.addEventListener("visibilitychange", () => {
+                if (document.hidden && currentUser && currentUser.state.competition_status === "IN_PROGRESS") {
+                    handleTabViolation();
+                }
+            });
+
+            // Code Draft Auto-Save
+            const editor = document.getElementById("code-editor");
+            editor.addEventListener("input", () => {
+                if (activeProblemId) localStorage.setItem("code_relay_draft_" + activeProblemId, editor.value);
+                updateLineNumbers();
+            });
+        }
+
+        function logActivity(regNo, evt) {
+            const users = getDBUsers();
+            if (users[regNo]) {
+                users[regNo].state.activity_log.push({ time: new Date().toLocaleTimeString(), event: evt });
+                saveDBUsers(users);
+            }
+        }
+
+        function handleTabViolation() {
+            if (!currentUser) return;
+            const users = getDBUsers();
+            const st = users[currentUser.register_number].state;
+            st.tab_switch_count = (st.tab_switch_count || 0) + 1;
+            if (st.tab_switch_count > 2) {
+                st.is_suspended = true;
+                st.activity_log.push({ time: new Date().toLocaleTimeString(), event: "🚨 SUSPENDED: Tab switch limit exceeded (> 2 times)" });
+            } else {
+                st.activity_log.push({ time: new Date().toLocaleTimeString(), event: `⚠️ Security Warning: Tab switch violation (${st.tab_switch_count}/2)` });
+            }
+            saveDBUsers(users);
+            currentUser.state = st;
+
+            if (st.is_suspended) {
+                showSuspensionModal();
+            } else {
+                showToast(`⚠️ Security Warning: Tab switch detected (${st.tab_switch_count}/2)`, "🛑");
+            }
+        }
+
+        function showSuspensionModal() {
+            document.getElementById("tab-suspended-modal").style.display = "flex";
+            document.getElementById("btn-run-code").disabled = true;
+            document.getElementById("btn-submit-code").disabled = true;
+
+            // Live polling for instant unlock when admin unlocks
+            if (!suspensionInterval) {
+                suspensionInterval = setInterval(() => {
+                    const users = getDBUsers();
+                    if (currentUser && users[currentUser.register_number]) {
+                        const st = users[currentUser.register_number].state;
+                        if (!st.is_suspended) {
+                            document.getElementById("tab-suspended-modal").style.display = "none";
+                            document.getElementById("btn-run-code").disabled = false;
+                            document.getElementById("btn-submit-code").disabled = false;
+                            showToast("🔓 Admin has unlocked your session! You can continue now.", "✨");
+                            clearInterval(suspensionInterval);
+                            suspensionInterval = null;
+                        }
+                    }
+                }, 1000);
+            }
+        }
+
+        function renderDashboard() {
+            if (!currentUser) return;
+            const st = currentUser.state;
+            document.getElementById("dash-greeting").innerText = `Welcome, ${currentUser.full_name}!`;
+            document.getElementById("dash-student-name").innerText = currentUser.full_name;
+            document.getElementById("dash-reg-no").innerText = currentUser.register_number;
+            document.getElementById("dash-comp-status").innerText = st.competition_status === "IN_PROGRESS" ? "In Progress" : (st.competition_status === "COMPLETED" ? "Completed" : "Ready to Start");
+            document.getElementById("dash-current-round").innerText = `Round ${st.current_round}`;
+            document.getElementById("dash-problems-solved").innerText = `${st.completed_problems.length} / 5`;
+
+            const btnCta = document.getElementById("btn-start-competition");
+            if (st.competition_status === "IN_PROGRESS") {
+                btnCta.innerHTML = `<span class="cta-icon">▶️</span> Continue Competition`;
+            } else {
+                btnCta.innerHTML = `<span class="cta-icon">🚀</span> Start Competition`;
+            }
+        }
+
+        function startCompetition() {
+            if (!currentUser) return;
+            const users = getDBUsers();
+            const st = users[currentUser.register_number].state;
+            if (st.competition_status !== "IN_PROGRESS" && st.competition_status !== "COMPLETED") {
+                st.competition_status = "IN_PROGRESS";
+                st.start_time = Date.now();
+                st.activity_log.push({ time: new Date().toLocaleTimeString(), event: "Started Competition Arena" });
+                saveDBUsers(users);
+                currentUser.state = st;
+            }
+            showView("workspace");
+            startTimer();
+            loadProblem(parseInt(localStorage.getItem("code_relay_active_problem")) || st.current_problem_id || 1);
+        }
+
+        function loadProblem(probId) {
+            activeProblemId = probId;
+            localStorage.setItem("code_relay_active_problem", probId);
+            const prob = PROBLEMS[probId];
+            if (!prob) return;
+
+            document.getElementById("prob-num-badge").innerText = `PROBLEM ${prob.number}`;
+            document.getElementById("prob-title").innerText = prob.title;
+            document.getElementById("prob-difficulty").innerText = prob.difficulty;
+            document.getElementById("prob-description").innerText = prob.description;
+            document.getElementById("prob-input-format").innerText = prob.input_format;
+            document.getElementById("prob-output-format").innerText = prob.output_format;
+            document.getElementById("prob-constraints").innerText = prob.constraints;
+            document.getElementById("prob-sample-input").innerText = prob.sample_input;
+            document.getElementById("prob-sample-output").innerText = prob.sample_output;
+            document.getElementById("prob-explanation").innerText = prob.explanation;
+
+            const editor = document.getElementById("code-editor");
+            editor.value = localStorage.getItem("code_relay_draft_" + probId) || prob.template;
+            document.getElementById("custom-input-text").value = prob.sample_input;
+            document.getElementById("console-section").style.display = "none";
+            updateLineNumbers();
+            renderSidebar();
+        }
+
+        function updateLineNumbers() {
+            const editor = document.getElementById("code-editor");
+            const lines = editor.value.split("\n").length;
+            let numHtml = "";
+            for (let i = 1; i <= lines; i++) numHtml += i + "<br>";
+            document.getElementById("line-numbers").innerHTML = numHtml;
+        }
+
+        function renderSidebar() {
+            const nav = document.getElementById("sidebar-navigation");
+            nav.innerHTML = "";
+            const st = currentUser ? currentUser.state : { completed_problems: [], current_problem_id: 1 };
+
+            [1, 2, 3, 4, 5].forEach(id => {
+                const prob = PROBLEMS[id];
+                const isCompleted = st.completed_problems.includes(id);
+                const isCurrent = id === st.current_problem_id;
+                const isLocked = !isCompleted && !isCurrent;
+
+                const div = document.createElement("div");
+                div.className = `nav-item ${isCurrent ? 'active' : ''} ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''}`;
+                div.innerHTML = `<div><strong>P${prob.number}: ${prob.title}</strong><div style="font-size:0.75rem;color:var(--text-muted);">Round ${prob.round}</div></div><div>${isCompleted ? '✓' : (isLocked ? '🔒' : '▶')}</div>`;
+                if (!isLocked) {
+                    div.addEventListener("click", () => loadProblem(id));
+                }
+                nav.appendChild(div);
+            });
+        }
+
+        function executeCode(isSubmission) {
+            const prob = PROBLEMS[activeProblemId];
+            const inp = isSubmission ? prob.sample_input : document.getElementById("custom-input-text").value;
+            const userOutput = prob.solve(inp);
+            const isAccepted = isSubmission ? (userOutput === prob.sample_output.trim()) : true;
+
+            const consoleSec = document.getElementById("console-section");
+            consoleSec.style.display = "flex";
+            const banner = document.getElementById("verdict-banner");
+            const tag = document.getElementById("verdict-tag");
+
+            if (isAccepted) {
+                banner.className = "verdict-banner verdict-accepted";
+                tag.innerText = isSubmission ? "Verdict: Accepted" : "Execution Success";
+                document.getElementById("console-stdout").innerText = `Output:\n${userOutput}\n\n✓ All Test Cases Passed!`;
+                document.getElementById("console-stderr").innerText = "";
+
+                if (isSubmission && currentUser) {
+                    const users = getDBUsers();
+                    const st = users[currentUser.register_number].state;
+                    if (!st.completed_problems.includes(activeProblemId)) {
+                        st.completed_problems.push(activeProblemId);
+                        st.activity_log.push({ time: new Date().toLocaleTimeString(), event: `Submitted Problem ${activeProblemId} - Accepted!` });
+                        if (activeProblemId < 5) st.current_problem_id = activeProblemId + 1;
+                        if (st.completed_problems.length === 3) st.current_round = 2;
+                        if (st.completed_problems.length === 5) st.competition_status = "COMPLETED";
+                        saveDBUsers(users);
+                        currentUser.state = st;
+
+                        setTimeout(() => {
+                            document.getElementById("modal-title").innerText = activeProblemId === 5 ? "🏆 CHAMPION! All Problems Solved!" : `Problem ${activeProblemId} Solved!`;
+                            document.getElementById("modal-message").innerText = `Great job! Problem ${activeProblemId} completed successfully.`;
+                            document.getElementById("celebration-modal").style.display = "flex";
+                        }, 500);
+                    }
+                }
+            } else {
+                banner.className = "verdict-banner verdict-wrong";
+                tag.innerText = "Verdict: Wrong Answer";
+                document.getElementById("console-stdout").innerText = `Output:\n${userOutput}\nExpected:\n${prob.sample_output}`;
+                document.getElementById("console-stderr").innerText = "";
+            }
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const timerDisplay = document.getElementById("timer-display");
+                if (timerDisplay) {
+                    const now = Date.now();
+                    const start = currentUser ? currentUser.state.start_time || now : now;
+                    const elapsed = Math.floor((now - start) / 1000);
+                    const rem = Math.max(0, 5400 - elapsed);
+                    const m = Math.floor(rem / 60);
+                    const s = rem % 60;
+                    timerDisplay.innerText = `${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
+                }
+            }, 1000);
+        }
+
+        // Admin Portal Renderer
+        function renderAdminDashboard() {
+            const users = getDBUsers();
+            const list = Object.values(users);
+
+            document.getElementById("stat-total-students").innerText = list.length;
+            document.getElementById("stat-active-students").innerText = list.filter(u => u.state.competition_status === "IN_PROGRESS").length;
+            document.getElementById("stat-completed-students").innerText = list.filter(u => u.state.completed_problems.length === 5).length;
+
+            const tbody = document.getElementById("admin-students-tbody");
+            tbody.innerHTML = "";
+
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--text-muted);">No registered students yet.</td></tr>';
+                return;
+            }
+
+            list.forEach(u => {
+                const st = u.state;
+                const tr = document.createElement("tr");
+                const latestEvt = st.activity_log.length > 0 ? st.activity_log[st.activity_log.length - 1].event : "No activity";
+                const unlockBtn = st.is_suspended ? `<button class="btn btn-primary btn-xs" onclick="adminUnlock('${u.register_number}')" style="background:var(--accent-green);">🔓 UNLOCK</button>` : "";
+
+                tr.innerHTML = `
+                    <td><code>${u.register_number}</code></td>
+                    <td>${u.full_name}</td>
+                    <td><span class="status-badge ${st.is_suspended ? 'status-locked' : ''}">${st.is_suspended ? 'SUSPENDED' : st.competition_status}</span></td>
+                    <td>Round ${st.current_round}</td>
+                    <td>Problem ${st.current_problem_id}</td>
+                    <td>${st.completed_problems.length} / 5</td>
+                    <td>90m Timer</td>
+                    <td>${st.tab_switch_count > 0 ? '⚠️ ' + st.tab_switch_count : '0 Clean'}</td>
+                    <td style="font-size:0.8rem;">${latestEvt}</td>
+                    <td>${unlockBtn} <button class="btn btn-secondary btn-xs" onclick="adminAudit('${u.register_number}')">🔍 Audit</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.adminUnlock = function(regNo) {
+            const users = getDBUsers();
+            if (users[regNo]) {
+                users[regNo].state.is_suspended = false;
+                users[regNo].state.tab_switch_count = 0;
+                users[regNo].state.activity_log.push({ time: new Date().toLocaleTimeString(), event: "🔓 Admin unlocked student session" });
+                saveDBUsers(users);
+                showToast(`Student ${regNo} unlocked!`, "🔓");
+                renderAdminDashboard();
+            }
+        };
+
+        window.adminAudit = function(regNo) {
+            const users = getDBUsers();
+            const u = users[regNo];
+            if (!u) return;
+            document.getElementById("audit-student-name").innerText = u.full_name;
+            document.getElementById("audit-reg-num").innerText = u.register_number;
+            const logList = document.getElementById("audit-log-list");
+            logList.innerHTML = "";
+            u.state.activity_log.slice().reverse().forEach(log => {
+                const div = document.createElement("div");
+                div.style.cssText = "padding:0.4rem 0;border-bottom:1px solid var(--border-color);font-size:0.85rem;";
+                div.innerHTML = `<span style="color:var(--text-muted);margin-right:0.5rem;">[${log.time}]</span><span>${log.event}</span>`;
+                logList.appendChild(div);
+            });
+            document.getElementById("admin-process-modal").style.display = "flex";
+        };
+    </script>
+</body>
+</html>

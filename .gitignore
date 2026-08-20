@@ -1,0 +1,31 @@
+# Python backend files (not needed for Netlify static deploy)
+server.py
+compiler.py
+user_db.py
+problem_db.py
+users_store.json
+
+# Shell scripts
+*.sh
+
+# Docker / Render
+Dockerfile
+Procfile
+render.yaml
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Test files
+test_*.py
+
+# Public folder (Netlify uses root index.html)
+public/
+
+# macOS
+.DS_Store
+
+# Node (if any)
+node_modules/
