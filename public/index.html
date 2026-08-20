@@ -417,9 +417,29 @@ body{background:var(--bg-main);color:var(--text-main);font-family:var(--font-san
 <div class="modal-bd" id="sus-modal" style="display:none;z-index:10000;">
   <div class="modal-card blk-card" style="max-width:540px;border:2px solid var(--accent-rose);"><div class="mh"><div class="blk-ico">🚨</div><h2 class="mtitle" style="color:var(--accent-rose);">COMPETITION SUSPENDED</h2></div><div class="mbody"><p class="mmsg" style="color:#fff;font-size:1.05rem;">Your session has been <strong>SUSPENDED</strong> due to multiple tab-switching violations (more than 2 times).</p><p style="color:#cbd5e1;font-size:.9rem;margin-top:.65rem;">🔒 Code execution is blocked. <strong>Notify your invigilator / administrator.</strong></p></div><div class="mfooter"><span class="sbadge sbadge-locked" style="font-size:.9rem;padding:.5rem 1rem;">Awaiting Admin Unlock...</span></div></div>
 </div>
-<!-- Audit -->
+<!-- Audit & Student Inspector Modal -->
 <div class="modal-bd" id="audit-modal" style="display:none;">
-  <div class="modal-card mc-wide"><div class="mh row"><h2 style="font-size:1.2rem;">🔍 Student Activity Audit Log</h2><button class="mbtn-close" id="btn-close-audit">&times;</button></div><div style="margin-bottom:.75rem;"><div class="irow" style="font-size:.9rem;"><span class="ilabel">Student:</span><span class="ival" id="aud-name">--</span></div><div class="irow" style="font-size:.9rem;margin-top:.4rem;"><span class="ilabel">Register Number:</span><span class="ival hl" id="aud-reg">--</span></div></div><h4 style="color:var(--accent-blue);font-size:.85rem;margin-bottom:.5rem;">TIMELINE LOG (newest first):</h4><div class="audit-log" id="aud-log"></div></div>
+  <div class="modal-card mc-wide" style="max-width:800px;">
+    <div class="mh row">
+      <h2 style="font-size:1.2rem;color:var(--accent-purple);">🔍 Student Details & Live Action Inspector</h2>
+      <button class="mbtn-close" id="btn-close-audit">&times;</button>
+    </div>
+    <div style="margin-bottom:.75rem;background:var(--bg-code);padding:.85rem;border-radius:.5rem;border:1px solid var(--border-color);">
+      <div class="irow" style="font-size:.9rem;"><span class="ilabel">Student Name:</span><span class="ival" id="aud-name">--</span></div>
+      <div class="irow" style="font-size:.9rem;margin-top:.4rem;"><span class="ilabel">Register Number:</span><span class="ival hl" id="aud-reg">--</span></div>
+    </div>
+    
+    <div style="margin-top:.5rem;">
+      <h4 style="color:var(--accent-blue);font-size:.85rem;margin-bottom:.5rem;">💻 STUDENT CODE INSPECTOR (Select Problem):</h4>
+      <div id="aud-prob-selector" style="margin-bottom:.5rem;display:flex;gap:.25rem;"></div>
+      <pre id="aud-code-display" style="background:var(--bg-code);border:1px solid var(--border-color);border-radius:.5rem;padding:.85rem;font-family:var(--font-mono);font-size:.85rem;color:#f8fafc;max-height:200px;overflow-y:auto;white-space:pre-wrap;">// Select a problem above to inspect code</pre>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <h4 style="color:var(--accent-blue);font-size:.85rem;margin-bottom:.5rem;">📜 ACTION TIMELINE LOG (Newest first):</h4>
+      <div class="audit-log" id="aud-log" style="max-height:180px;"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -481,8 +501,8 @@ const sDB=db=>localStorage.setItem(DBK,JSON.stringify(db));
 const curReg=()=>localStorage.getItem(CUK);
 const isAdm=()=>!!localStorage.getItem(ATK);
 
-function syncDB(){const reg=curReg();if(!reg)return;const db=gDB();if(!db[reg])return;const u=db[reg],st=u.state;S.register_number=u.register_number;S.user_name=u.full_name;S.competition_status=st.competition_status||"NOT_STARTED";S.current_problem_id=st.current_problem_id||1;S.completed_problems=st.completed_problems||[];S.problem_times=st.problem_times||{};S.current_round=st.current_round||1;S.round_status=st.round_status||"ROUND 1 IN PROGRESS";S.tab_switch_count=st.tab_switch_count||0;S.is_suspended=st.is_suspended||false;S.start_time=st.start_time||null;S.remaining_seconds=st.remaining_seconds!==undefined?st.remaining_seconds:5400;}
-function writeDB(){const reg=curReg();if(!reg)return;const db=gDB();if(!db[reg])return;Object.assign(db[reg].state,{competition_status:S.competition_status,current_problem_id:S.current_problem_id,completed_problems:S.completed_problems,problem_times:S.problem_times,current_round:S.current_round,round_status:S.round_status,tab_switch_count:S.tab_switch_count,is_suspended:S.is_suspended,start_time:S.start_time,remaining_seconds:S.remaining_seconds});sDB(db);}
+function syncDB(){const reg=curReg();if(!reg)return;const db=gDB();if(!db[reg])return;const u=db[reg],st=u.state;S.register_number=u.register_number;S.user_name=u.full_name;S.competition_status=st.competition_status||"NOT_STARTED";S.current_problem_id=st.current_problem_id||1;S.completed_problems=st.completed_problems||[];S.problem_times=st.problem_times||{};S.current_round=st.current_round||1;S.round_status=st.round_status||"ROUND 1 IN PROGRESS";S.tab_switch_count=st.tab_switch_count||0;S.is_suspended=st.is_suspended||false;S.start_time=st.start_time||null;S.remaining_seconds=st.remaining_seconds!==undefined?st.remaining_seconds:5400;S.code_submissions=st.code_submissions||{};}
+function writeDB(){const reg=curReg();if(!reg)return;const db=gDB();if(!db[reg])return;Object.assign(db[reg].state,{competition_status:S.competition_status,current_problem_id:S.current_problem_id,completed_problems:S.completed_problems,problem_times:S.problem_times,current_round:S.current_round,round_status:S.round_status,tab_switch_count:S.tab_switch_count,is_suspended:S.is_suspended,start_time:S.start_time,remaining_seconds:S.remaining_seconds,code_submissions:S.code_submissions||{}});sDB(db);}
 function addLog(reg,evt){const db=gDB();if(!db[reg])return;db[reg].state.activity_log=db[reg].state.activity_log||[];db[reg].state.activity_log.push({time:new Date().toLocaleTimeString(),event:evt});sDB(db);}
 
 /* UI HELPERS */
@@ -546,16 +566,87 @@ function setupWSBtns(){
 function startComp(){syncDB();if(S.competition_status!=="IN_PROGRESS"&&S.competition_status!=="COMPLETED"){S.competition_status="IN_PROGRESS";S.start_time=Date.now();S.remaining_seconds=5400;addLog(S.register_number,"Started Competition Arena — 90-min Countdown Active");}else addLog(S.register_number,"Resumed competition arena");writeDB();showView("ws");renderHdr();startTimer();loadProb(parseInt(localStorage.getItem(PK))||S.current_problem_id||1);if(!mvOk)document.getElementById("mv-modal").style.display="flex";}
 
 /* PROBLEM LOADING */
-function loadProb(pid){hideSecBanner();const p=PROBS[pid];if(!p)return;syncDB();const done=S.completed_problems.includes(pid),cur=pid===S.current_problem_id;if(!done&&!cur){showSecBanner(`Problem ${pid} is locked! Complete Problem ${S.current_problem_id} first.`);return;}activePid=pid;curProb=p;localStorage.setItem(PK,pid);document.getElementById("p-num").innerText=`PROBLEM ${p.n}`;document.getElementById("p-title").innerText=p.title;const d=document.getElementById("p-diff");d.innerText=p.diff;d.className=`diff ${p.diff.toLowerCase()}`;document.getElementById("p-desc").innerText=p.desc;document.getElementById("p-inf").innerText=p.inf;document.getElementById("p-outf").innerText=p.outf;document.getElementById("p-con").innerText=p.con;document.getElementById("p-si").innerText=p.si;document.getElementById("p-so").innerText=p.so;document.getElementById("p-exp").innerText=p.exp;const ed=document.getElementById("code-ed");ed.value=localStorage.getItem("crd_"+pid)||p.tpl;document.getElementById("ci-text").value=p.si;document.getElementById("console-sec").style.display="none";document.getElementById("unlock-toast").style.display="none";updateLN();renderSB();}
+function loadProb(pid){
+  hideSecBanner();
+  const p=PROBS[pid];if(!p)return;
+  syncDB();
+  const done=S.completed_problems.includes(pid),cur=pid===S.current_problem_id;
+  if(!done&&!cur){showSecBanner(`Problem ${pid} is locked! Complete Problem ${S.current_problem_id} first.`);return;}
+  activePid=pid;curProb=p;localStorage.setItem(PK,pid);
+  addLog(S.register_number,`Navigated to Problem ${pid}: ${p.title}`);
+  document.getElementById("p-num").innerText=`PROBLEM ${p.n}`;
+  document.getElementById("p-title").innerText=p.title;
+  const d=document.getElementById("p-diff");d.innerText=p.diff;d.className=`diff ${p.diff.toLowerCase()}`;
+  document.getElementById("p-desc").innerText=p.desc;
+  document.getElementById("p-inf").innerText=p.inf;
+  document.getElementById("p-outf").innerText=p.outf;
+  document.getElementById("p-con").innerText=p.con;
+  document.getElementById("p-si").innerText=p.si;
+  document.getElementById("p-so").innerText=p.so;
+  document.getElementById("p-exp").innerText=p.exp;
+  const ed=document.getElementById("code-ed");
+  ed.value=localStorage.getItem("crd_"+pid)||p.tpl;
+  document.getElementById("ci-text").value=p.si;
+  document.getElementById("console-sec").style.display="none";
+  document.getElementById("unlock-toast").style.display="none";
+  updateLN();renderSB();
+}
 function renderSB(){syncDB();const nav=document.getElementById("sb-nav");nav.innerHTML="";[1,2].forEach(r=>{const g=document.createElement("div");g.className="rnd-grp";const h=document.createElement("div");h.className="rnd-banner";const ul=S.current_round>=r;h.innerHTML=`<span>ROUND ${r}</span>${ul?'<span class="rnd-ok">UNLOCKED</span>':'<span style="color:var(--text-dim);">🔒 LOCKED</span>'}`;g.appendChild(h);PMETA.filter(pm=>pm.round===r).forEach(pm=>{const done=S.completed_problems.includes(pm.id),cur=pm.id===S.current_problem_id,lkd=!done&&!cur;const item=document.createElement("div");item.className=`prob-item${done?" done":""}${cur&&!done?" unlocked":""}${lkd?" locked":""}${pm.id===activePid?" active":""}`;let ico="🔒",stxt="Locked",scls="sl";if(done){ico="✓";const t=S.problem_times[pm.id]||S.problem_times[String(pm.id)];stxt=t?`Accepted (${t})`:"Accepted";scls="sc";}else if(cur){ico="🔓";stxt="Unlocked";scls="su";}item.innerHTML=`<div class="p-ico">${ico}</div><div class="p-det"><div class="p-title">P${pm.n}: ${pm.title}</div><div class="p-stat ${scls}">${stxt}</div></div>`;item.onclick=()=>{if(lkd)showSecBanner(`P${pm.n} is locked! Complete Problem ${S.current_problem_id} first.`);else loadProb(pm.id);};g.appendChild(item);});nav.appendChild(g);});}
 
 /* EDITOR */
-function setupEditorKeys(){const ed=document.getElementById("code-ed");ed.addEventListener("input",()=>{updateLN();if(activePid)localStorage.setItem("crd_"+activePid,ed.value);});ed.addEventListener("keydown",e=>{if(e.key==="Tab"){e.preventDefault();const s=ed.selectionStart,en=ed.selectionEnd;ed.value=ed.value.substring(0,s)+"    "+ed.value.substring(en);ed.selectionStart=ed.selectionEnd=s+4;updateLN();}});}
+function setupEditorKeys(){const ed=document.getElementById("code-ed");ed.addEventListener("input",()=>{updateLN();if(activePid){localStorage.setItem("crd_"+activePid,ed.value);S.code_submissions=S.code_submissions||{};S.code_submissions[activePid]=ed.value;writeDB();}});ed.addEventListener("keydown",e=>{if(e.key==="Tab"){e.preventDefault();const s=ed.selectionStart,en=ed.selectionEnd;ed.value=ed.value.substring(0,s)+"    "+ed.value.substring(en);ed.selectionStart=ed.selectionEnd=s+4;updateLN();}});}
 function updateLN(){const ed=document.getElementById("code-ed");document.getElementById("lnums").innerHTML=Array.from({length:ed.value.split("\n").length},(_,i)=>i+1).join("<br>");}
 function setupAntiCopy(){["code-ed","ci-text"].forEach(id=>{const el=document.getElementById(id);if(!el)return;const blk=(e,m)=>{e.preventDefault();toast(`⚠️ ${m} is disabled during competition!`,"🛑");};el.addEventListener("paste",e=>blk(e,"Pasting"));el.addEventListener("copy",e=>blk(e,"Copying"));el.addEventListener("cut",e=>blk(e,"Cutting"));el.addEventListener("drop",e=>blk(e,"Drag & Drop"));el.addEventListener("contextmenu",e=>blk(e,"Right-Click"));el.addEventListener("keydown",e=>{const k=(e.key||"").toLowerCase();if((e.ctrlKey||e.metaKey)&&["v","c","x"].includes(k)){e.preventDefault();toast(`⚠️ Ctrl/Cmd+${k.toUpperCase()} is disabled!`,"🛑");}});});}
 
 /* CODE EXECUTION */
-function execCode(isSub){if(!curProb)return;const code=document.getElementById("code-ed").value.trim();if(!code){toast("Please write your code first!","⚠️");return;}const br=document.getElementById("btn-run"),bs=document.getElementById("btn-sub");br.disabled=true;bs.disabled=true;const inp=isSub?curProb.si:(document.getElementById("ci-text").value||curProb.si);setTimeout(()=>{let out,verdict,stdout,stderr="";try{out=curProb.eval(inp);if(isSub){const exp=curProb.so.trim();verdict=out.trim()===exp?"Accepted":"Wrong Answer";stdout=verdict==="Accepted"?`Output:\n${out}\n\n✓ All test cases passed!`:`Your Output:\n${out}\n\nExpected Output:\n${exp}`;}else{verdict="OK";stdout=`Output:\n${out}`;}}catch(err){verdict="Runtime Error";stderr=String(err);stdout="";}const cs=document.getElementById("console-sec");cs.style.display="flex";const vb=document.getElementById("vb");vb.className="verdict-banner";if(verdict==="Accepted")vb.classList.add("v-acc");else if(verdict==="Wrong Answer")vb.classList.add("v-wrong");else if(verdict==="Runtime Error")vb.classList.add("v-run");document.getElementById("vtag").innerText=`Verdict: ${verdict==="OK"?"Execution Success":verdict}`;document.getElementById("etime").innerText="Execution Time: 0.01 seconds";document.getElementById("cout").innerText=stdout;document.getElementById("cerr").innerText=stderr;cs.scrollIntoView({behavior:"smooth",block:"nearest"});if(isSub&&verdict==="Accepted")handleAccepted(curProb.id);br.disabled=false;bs.disabled=false;},300);}
+function execCode(isSub){
+  if(!curProb)return;
+  const code=document.getElementById("code-ed").value.trim();
+  if(!code){toast("Please write your code first!","⚠️");return;}
+  
+  syncDB();
+  S.code_submissions=S.code_submissions||{};
+  S.code_submissions[curProb.id]=code;
+  writeDB();
+
+  const br=document.getElementById("btn-run"),bs=document.getElementById("btn-sub");
+  br.disabled=true;bs.disabled=true;
+  const inp=isSub?curProb.si:(document.getElementById("ci-text").value||curProb.si);
+
+  setTimeout(()=>{
+    let out,verdict,stdout,stderr="";
+    try{
+      out=curProb.eval(inp);
+      if(isSub){
+        const exp=curProb.so.trim();
+        verdict=out.trim()===exp?"Accepted":"Wrong Answer";
+        stdout=verdict==="Accepted"?`Output:\n${out}\n\n✓ All test cases passed!`:`Your Output:\n${out}\n\nExpected Output:\n${exp}`;
+        addLog(S.register_number,`Submitted P${curProb.id} code — Verdict: ${verdict}`);
+      }else{
+        verdict="OK";
+        stdout=`Output:\n${out}`;
+        addLog(S.register_number,`Executed (Run Code) on Problem ${curProb.id}`);
+      }
+    }catch(err){
+      verdict="Runtime Error";stderr=String(err);stdout="";
+      addLog(S.register_number,`Runtime Error on Problem ${curProb.id}`);
+    }
+    const cs=document.getElementById("console-sec");
+    cs.style.display="flex";
+    const vb=document.getElementById("vb");
+    vb.className="verdict-banner";
+    if(verdict==="Accepted")vb.classList.add("v-acc");
+    else if(verdict==="Wrong Answer")vb.classList.add("v-wrong");
+    else if(verdict==="Runtime Error")vb.classList.add("v-run");
+    document.getElementById("vtag").innerText=`Verdict: ${verdict==="OK"?"Execution Success":verdict}`;
+    document.getElementById("etime").innerText="Execution Time: 0.01 seconds";
+    document.getElementById("cout").innerText=stdout;
+    document.getElementById("cerr").innerText=stderr;
+    cs.scrollIntoView({behavior:"smooth",block:"nearest"});
+    if(isSub&&verdict==="Accepted")handleAccepted(curProb.id);
+    br.disabled=false;bs.disabled=false;
+  },300);
+}
 
 function handleAccepted(pid){syncDB();if(S.completed_problems.includes(pid))return;const el=S.start_time?Math.round((Date.now()-S.start_time)/1000):0;const m=Math.floor(el/60),s=el%60;const t=`${String(m).padStart(2,"0")}m ${String(s).padStart(2,"0")}s`;S.completed_problems.push(pid);S.problem_times[pid]=t;addLog(S.register_number,`✅ Submitted P${pid} – Accepted! (${t})`);let umsg="";if(pid<5){S.current_problem_id=pid+1;if(pid===3){S.current_round=2;S.round_status="ROUND 2 IN PROGRESS";}const nxt=PROBS[pid+1];umsg=pid===3?`🎉 Round 1 Complete! Round 2 Unlocked!\nNext: P4 – ${nxt.title}`:`✅ P${pid} Accepted! P${pid+1}: ${nxt.title} is now unlocked!`;}if(S.completed_problems.length===5){S.competition_status="COMPLETED";S.round_status="COMPETITION COMPLETED 🏆";}writeDB();if(umsg){document.getElementById("ut-text").innerText=umsg;document.getElementById("unlock-toast").style.display="flex";}setTimeout(()=>{const times=Object.entries(S.problem_times).map(([k,v])=>`  P${k} (${PROBS[k]?.title||""}): ${v}`).join("\n");const title=pid===5?"🏆 COMPETITION COMPLETED!":"🎉 Problem Solved!";const msg=pid===5?`Congratulations! All 5 problems solved!\n\nPer-Problem Times:\n${times}`:`Great job! P${pid} completed.\nP${pid+1} is now unlocked!`;document.getElementById("cel-title").innerText=title;document.getElementById("cel-msg").innerText=msg;document.getElementById("cel-modal").style.display="flex";},700);renderSB();renderHdr();}
 
@@ -577,9 +668,108 @@ function pollSusp(){const reg=curReg();if(!reg)return;const db=gDB();if(!db[reg]
 function setupMV(){const pm=document.getElementById("mv-modal"),bo=document.getElementById("mv-blocked");const go=async()=>{try{if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else if(document.documentElement.webkitRequestFullscreen)await document.documentElement.webkitRequestFullscreen();}catch(e){}mvOk=true;pm.style.display="none";bo.style.display="none";};document.getElementById("btn-mv-accept").onclick=go;document.getElementById("btn-mv-restore").onclick=go;document.getElementById("btn-mv-decline").onclick=()=>{mvOk=false;pm.style.display="none";bo.style.display="flex";};const check=()=>{if(!mvOk)return;const fs=!!(document.fullscreenElement||document.webkitFullscreenElement);const mx=window.innerWidth>=screen.availWidth*.9&&window.innerHeight>=screen.availHeight*.85;const ws=document.getElementById("app-con");if(!fs&&!mx&&ws&&ws.style.display!=="none")bo.style.display="flex";else bo.style.display="none";};document.addEventListener("fullscreenchange",check);document.addEventListener("webkitfullscreenchange",check);window.addEventListener("resize",check);}
 
 /* ADMIN */
-function renderAdm(){const db=gDB();const list=Object.values(db).map(u=>({register_number:u.register_number,full_name:u.full_name,competition_status:u.state.competition_status,current_round:u.state.current_round,current_problem_id:u.state.current_problem_id,completed_problems:u.state.completed_problems||[],problem_times:u.state.problem_times||{},tab_switch_count:u.state.tab_switch_count||0,is_suspended:u.state.is_suspended||false,start_time:u.state.start_time||null,activity_log:u.state.activity_log||[]}));document.getElementById("st-total").innerText=list.length;document.getElementById("st-active").innerText=list.filter(s=>s.competition_status==="IN_PROGRESS").length;document.getElementById("st-done").innerText=list.filter(s=>s.completed_problems.length===5).length;const tbody=document.getElementById("adm-tbody");tbody.innerHTML="";if(!list.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--text-muted);">No students registered yet.</td></tr>';return;}list.forEach(st=>{const tr=document.createElement("tr");let scls="sbadge",stxt=st.competition_status;if(st.is_suspended){stxt="SUSPENDED";scls+=" sbadge-locked";}else if(st.competition_status==="COMPLETED")stxt="Completed";else if(st.competition_status==="IN_PROGRESS")stxt="In Progress";else stxt="Not Started";const solved=st.completed_problems.length?st.completed_problems.map(p=>{const t=st.problem_times[p]||st.problem_times[String(p)]||"";return t?`✓P${p}(${t})`:`✓P${p}`;}).join(", "):"None";let tabH=`<span style="color:var(--accent-green);font-size:.85rem;">✓ Clean</span>`;if(st.is_suspended)tabH=`<span class="sbadge sbadge-locked">🚨${st.tab_switch_count} SUSPENDED</span>`;else if(st.tab_switch_count>0)tabH=`<span class="sbadge" style="background:rgba(245,158,11,.2);color:var(--accent-amber);">⚠️${st.tab_switch_count}/2</span>`;let unlkBtn="";if(st.is_suspended)unlkBtn=`<button class="btn btn-primary btn-xs" onclick="admUnlock('${st.register_number}')" style="background:var(--accent-green);border-color:var(--accent-green);margin-right:.35rem;">🔓 UNLOCK</button>`;let tLeft="—";if(st.start_time&&st.competition_status==="IN_PROGRESS"){const r=Math.max(0,5400-((Date.now()-st.start_time)/1000));tLeft=`${Math.floor(r/60)}m ${Math.floor(r%60)}s`;}else if(st.competition_status==="COMPLETED")tLeft="Done ✓";const latest=st.activity_log.length?st.activity_log[st.activity_log.length-1].event:"No activity yet";tr.innerHTML=`<td><code style="color:var(--accent-blue);">${st.register_number}</code></td><td>${st.full_name}</td><td><span class="${scls}">${stxt}</span></td><td>Round ${st.current_round||1}</td><td>Problem ${st.current_problem_id||1}</td><td style="font-size:.8rem;max-width:180px;">${solved}</td><td style="font-family:var(--font-mono);font-size:.85rem;">${tLeft}</td><td>${tabH}</td><td style="font-size:.8rem;max-width:200px;color:var(--text-muted);">${latest}</td><td style="white-space:nowrap;">${unlkBtn}<button class="btn btn-secondary btn-xs" onclick="admAudit('${st.register_number}')">🔍 Audit</button></td>`;tbody.appendChild(tr);});}
-window.admUnlock=function(reg){const db=gDB();if(!db[reg])return;db[reg].state.is_suspended=false;db[reg].state.tab_switch_count=0;db[reg].state.activity_log.push({time:new Date().toLocaleTimeString(),event:"🔓 Admin unlocked student session"});sDB(db);toast(`Student ${reg} unlocked!`,"🔓");renderAdm();};
-window.admAudit=function(reg){const db=gDB();const u=db[reg];if(!u)return;document.getElementById("aud-name").innerText=u.full_name;document.getElementById("aud-reg").innerText=u.register_number;const al=document.getElementById("aud-log");al.innerHTML="";const logs=u.state.activity_log||[];if(!logs.length){al.innerHTML='<p style="color:var(--text-muted);text-align:center;">No activity recorded yet.</p>';return;}logs.slice().reverse().forEach(e=>{const d=document.createElement("div");d.style.cssText="padding:.4rem 0;border-bottom:1px solid #1e293b;font-size:.85rem;";d.innerHTML=`<span style="color:var(--accent-blue);margin-right:.5rem;">[${e.time||""}]</span><span style="color:var(--text-secondary);">${e.event}</span>`;al.appendChild(d);});document.getElementById("audit-modal").style.display="flex";};
+function renderAdm(){
+  const db=gDB();
+  const list=Object.values(db).map(u=>({
+    register_number:u.register_number,full_name:u.full_name,password:u.password,
+    competition_status:u.state.competition_status,
+    current_round:u.state.current_round,
+    current_problem_id:u.state.current_problem_id,
+    completed_problems:u.state.completed_problems||[],
+    problem_times:u.state.problem_times||{},
+    tab_switch_count:u.state.tab_switch_count||0,
+    is_suspended:u.state.is_suspended||false,
+    start_time:u.state.start_time||null,
+    activity_log:u.state.activity_log||[],
+    code_submissions:u.state.code_submissions||{}
+  }));
+  document.getElementById("st-total").innerText=list.length;
+  document.getElementById("st-active").innerText=list.filter(s=>s.competition_status==="IN_PROGRESS").length;
+  document.getElementById("st-done").innerText=list.filter(s=>s.completed_problems.length===5).length;
+  const tbody=document.getElementById("adm-tbody");tbody.innerHTML="";
+  if(!list.length){
+    tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--text-muted);">No students registered yet.</td></tr>';
+    return;
+  }
+  list.forEach(st=>{
+    const tr=document.createElement("tr");
+    let scls="sbadge",stxt=st.competition_status;
+    if(st.is_suspended){stxt="SUSPENDED";scls+=" sbadge-locked";}
+    else if(st.competition_status==="COMPLETED")stxt="Completed";
+    else if(st.competition_status==="IN_PROGRESS")stxt="In Progress";
+    else stxt="Not Started";
+    const solved=st.completed_problems.length?st.completed_problems.map(p=>{const t=st.problem_times[p]||st.problem_times[String(p)]||"";return t?`✓P${p}(${t})`:`✓P${p}`;}).join(", "):"None";
+    let tabH=`<span style="color:var(--accent-green);font-size:.85rem;">✓ Clean</span>`;
+    if(st.is_suspended)tabH=`<span class="sbadge sbadge-locked">🚨${st.tab_switch_count} SUSPENDED</span>`;
+    else if(st.tab_switch_count>0)tabH=`<span class="sbadge" style="background:rgba(245,158,11,.2);color:var(--accent-amber);">⚠️${st.tab_switch_count}/2</span>`;
+    let unlkBtn="";
+    if(st.is_suspended)unlkBtn=`<button class="btn btn-primary btn-xs" onclick="admUnlock('${st.register_number}')" style="background:var(--accent-green);border-color:var(--accent-green);margin-right:.35rem;">🔓 UNLOCK</button>`;
+    let tLeft="—";
+    if(st.start_time&&st.competition_status==="IN_PROGRESS"){
+      const r=Math.max(0,5400-((Date.now()-st.start_time)/1000));
+      tLeft=`${Math.floor(r/60)}m ${Math.floor(r%60)}s`;
+    }else if(st.competition_status==="COMPLETED")tLeft="Done ✓";
+    const latest=st.activity_log.length?st.activity_log[st.activity_log.length-1].event:"No activity yet";
+    tr.innerHTML=`<td><code style="color:var(--accent-blue);">${st.register_number}</code></td><td>${st.full_name}</td><td><span class="${scls}">${stxt}</span></td><td>Round ${st.current_round||1}</td><td>Problem ${st.current_problem_id||1}</td><td style="font-size:.8rem;max-width:180px;">${solved}</td><td style="font-family:var(--font-mono);font-size:.85rem;">${tLeft}</td><td>${tabH}</td><td style="font-size:.8rem;max-width:200px;color:var(--text-muted);">${latest}</td><td style="white-space:nowrap;">${unlkBtn}<button class="btn btn-secondary btn-xs" onclick="admAudit('${st.register_number}')">🔍 View Data & Code</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+window.admUnlock=function(reg){
+  const db=gDB();if(!db[reg])return;
+  db[reg].state.is_suspended=false;
+  db[reg].state.tab_switch_count=0;
+  db[reg].state.activity_log.push({time:new Date().toLocaleTimeString(),event:"🔓 Admin unlocked student session"});
+  sDB(db);
+  toast(`Student ${reg} unlocked!`,"🔓");
+  renderAdm();
+};
+
+window.admAudit=function(reg){
+  const db=gDB();const u=db[reg];if(!u)return;
+  document.getElementById("aud-name").innerText=u.full_name;
+  document.getElementById("aud-reg").innerText=u.register_number;
+  
+  // Render timeline logs
+  const al=document.getElementById("aud-log");al.innerHTML="";
+  const logs=u.state.activity_log||[];
+  if(!logs.length){
+    al.innerHTML='<p style="color:var(--text-muted);text-align:center;">No activity recorded yet.</p>';
+  }else{
+    logs.slice().reverse().forEach(e=>{
+      const d=document.createElement("div");
+      d.style.cssText="padding:.4rem 0;border-bottom:1px solid #1e293b;font-size:.85rem;";
+      d.innerHTML=`<span style="color:var(--accent-blue);margin-right:.5rem;">[${e.time||""}]</span><span style="color:var(--text-secondary);">${e.event}</span>`;
+      al.appendChild(d);
+    });
+  }
+
+  // Render code inspector
+  const codes=u.state.code_submissions||{};
+  const codeBox=document.getElementById("aud-code-display");
+  const btnGroup=document.getElementById("aud-prob-selector");
+  if(btnGroup && codeBox){
+    btnGroup.innerHTML="";
+    [1,2,3,4,5].forEach(pid=>{
+      const b=document.createElement("button");
+      b.className="btn btn-secondary btn-xs";
+      b.style.marginRight="0.35rem";
+      const hasCode=!!codes[pid];
+      b.innerText=`P${pid}${hasCode?" ✓":""}`;
+      b.onclick=()=>{
+        document.querySelectorAll("#aud-prob-selector button").forEach(btn=>btn.className="btn btn-secondary btn-xs");
+        b.className="btn btn-primary btn-xs";
+        codeBox.innerText=codes[pid]||`// No code submitted/saved for Problem ${pid} yet`;
+      };
+      btnGroup.appendChild(b);
+    });
+    // Default select P1
+    if(btnGroup.firstChild) btnGroup.firstChild.click();
+  }
+
+  document.getElementById("audit-modal").style.display="flex";
+};
+
 function startAdmIv(){stopAdmIv();admIv=setInterval(renderAdm,3000);}
 function stopAdmIv(){if(admIv){clearInterval(admIv);admIv=null;}}
 </script>
