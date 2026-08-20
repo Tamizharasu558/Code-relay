@@ -597,7 +597,40 @@ function renderSB(){syncDB();const nav=document.getElementById("sb-nav");nav.inn
 function setupEditorKeys(){const ed=document.getElementById("code-ed");ed.addEventListener("input",()=>{updateLN();if(activePid){localStorage.setItem("crd_"+activePid,ed.value);S.code_submissions=S.code_submissions||{};S.code_submissions[activePid]=ed.value;writeDB();}});ed.addEventListener("keydown",e=>{if(e.key==="Tab"){e.preventDefault();const s=ed.selectionStart,en=ed.selectionEnd;ed.value=ed.value.substring(0,s)+"    "+ed.value.substring(en);ed.selectionStart=ed.selectionEnd=s+4;updateLN();}});}
 function updateLN(){const ed=document.getElementById("code-ed");document.getElementById("lnums").innerHTML=Array.from({length:ed.value.split("\n").length},(_,i)=>i+1).join("<br>");}
 function setupAntiCopy(){
-  // Copy & Paste fully enabled for user convenience
+  const block = (e, msg) => {
+    // Only enforce anti-copy in student competition workspace view
+    const ws = document.getElementById("app-con");
+    if (ws && ws.style.display !== "none") {
+      e.preventDefault();
+      toast(`⚠️ ${msg} is strictly disabled during competition!`, "🛑");
+    }
+  };
+
+  const targets = ["code-ed", "ci-text"];
+  targets.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("paste", e => block(e, "Pasting"));
+    el.addEventListener("copy", e => block(e, "Copying"));
+    el.addEventListener("cut", e => block(e, "Cutting"));
+    el.addEventListener("drop", e => block(e, "Drag & Drop"));
+    el.addEventListener("contextmenu", e => block(e, "Right-Click"));
+    el.addEventListener("keydown", e => {
+      const k = (e.key || "").toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && ["v", "c", "x", "a"].includes(k)) {
+        block(e, `Ctrl/Cmd+${k.toUpperCase()}`);
+      }
+    });
+  });
+
+  // Global right-click & copy blocking in workspace
+  document.addEventListener("contextmenu", e => {
+    const ws = document.getElementById("app-con");
+    if (ws && ws.style.display !== "none") {
+      e.preventDefault();
+      toast("⚠️ Right-click context menu is disabled in competition!", "🛑");
+    }
+  });
 }
 
 /* HIDDEN TEST CASES SUITE FOR PROGRAM LOGIC VERIFICATION */
