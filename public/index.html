@@ -310,6 +310,7 @@ body{background:var(--bg-main);color:var(--text-main);font-family:var(--font-san
   <div class="hdr-brand">
     <div class="brand-logo" id="logo-btn" style="cursor:pointer;" title="Back to Dashboard"><span class="logo-ico">⚡</span><span>CODE RELAY</span></div>
     <span class="sys-badge" id="stu-badge">REG0000</span>
+    <button class="btn btn-danger btn-xs" id="btn-ws-logout" style="margin-left:0.5rem;padding:0.25rem 0.6rem;font-size:0.75rem;">🚪 Logout</button>
   </div>
   <div class="hdr-status">
     <div class="chip"><span class="chip-dot dot-live"></span><span id="hdr-round">ROUND 1 IN PROGRESS</span></div>
@@ -540,11 +541,39 @@ function setupAuth(){
   document.getElementById("form-reg").onsubmit=doRegister;
   document.getElementById("form-admin").onsubmit=doAdminLogin;
   document.getElementById("btn-d-logout").onclick=doLogout;
+  const wsl = document.getElementById("btn-ws-logout");
+  if (wsl) wsl.onclick = doLogout;
   document.getElementById("btn-adm-logout").onclick=doAdmLogout;
   document.getElementById("btn-adm-refresh").onclick=renderAdm;
   document.getElementById("btn-close-audit").onclick=()=>document.getElementById("audit-modal").style.display="none";
 }
-function doLogin(e){e.preventDefault();hideErrs();const reg=document.getElementById("l-reg").value.trim().toUpperCase();const pwd=document.getElementById("l-pwd").value;if(!reg||!pwd){showErr("login-err","Please enter Register Number and Password.");return;}setLoading("btn-login",true,"Logging in...");setTimeout(()=>{const db=gDB();if(db[reg]&&db[reg].password===pwd){localStorage.setItem(CUK,reg);syncDB();addLog(reg,"Logged into Student Portal");toast(`Welcome back, ${db[reg].full_name}!`,"👋");showView("dash");renderDash();}else showErr("login-err","Invalid Register Number or Password.");setLoading("btn-login",false);},350);}
+function doLogin(e){
+  e.preventDefault();hideErrs();
+  const reg=document.getElementById("l-reg").value.trim().toUpperCase();
+  const pwd=document.getElementById("l-pwd").value;
+  if(!reg||!pwd){showErr("login-err","Please enter Register Number and Password.");return;}
+  setLoading("btn-login",true,"Logging in...");
+  setTimeout(()=>{
+    const db=gDB();
+    if(db[reg]&&db[reg].password===pwd){
+      localStorage.setItem(CUK,reg);
+      syncDB();
+      addLog(reg,"Logged into Student Portal");
+      toast(`Welcome back, ${db[reg].full_name}!`,"👋");
+      if(S.competition_status==="IN_PROGRESS"){
+        showView("ws");
+        renderHdr();
+        startTimer();
+        loadProb(parseInt(localStorage.getItem(PK))||S.current_problem_id||1);
+        if(S.is_suspended)showSuspModal();
+      }else{
+        showView("dash");
+        renderDash();
+      }
+    }else showErr("login-err","Invalid Register Number or Password.");
+    setLoading("btn-login",false);
+  },350);
+}
 function doRegister(e){e.preventDefault();hideErrs();const name=document.getElementById("r-name").value.trim();const reg=document.getElementById("r-reg").value.trim().toUpperCase();const pwd=document.getElementById("r-pwd").value;const cpwd=document.getElementById("r-cpwd").value;if(!name||!reg||!pwd||!cpwd){showErr("reg-err","All fields are required.");return;}if(pwd.length<4){showErr("reg-err","Password must be at least 4 characters.");return;}if(pwd!==cpwd){showErr("reg-err","Passwords do not match.");return;}const db=gDB();if(db[reg]){showErr("reg-err","Register Number already exists. Please login.");return;}setLoading("btn-reg",true,"Registering...");setTimeout(()=>{db[reg]={register_number:reg,full_name:name,password:pwd,state:{competition_status:"NOT_STARTED",current_problem_id:1,completed_problems:[],problem_times:{},current_round:1,round_status:"ROUND 1 IN PROGRESS",tab_switch_count:0,is_suspended:false,start_time:null,remaining_seconds:5400,activity_log:[{time:new Date().toLocaleTimeString(),event:"Account Registered Successfully"}]}};sDB(db);localStorage.setItem(CUK,reg);syncDB();toast(`Welcome ${name}! Account created.`,"🎉");showView("dash");renderDash();setLoading("btn-reg",false);},350);}
 function doAdminLogin(e){e.preventDefault();hideErrs();const u=document.getElementById("a-user").value.trim();const p=document.getElementById("a-pass").value.trim();if(!u||!p){showErr("admin-err","Please enter username and password.");return;}setLoading("btn-admin",true,"Verifying...");setTimeout(()=>{if(u===AU&&p===AP){localStorage.setItem(ATK,"ADM");toast("Welcome, Admin!","🛡️");showView("admin");}else showErr("admin-err","Invalid admin credentials.");setLoading("btn-admin",false);},350);}
 function doLogout(){const r=curReg();if(r)addLog(r,"Logged out");localStorage.removeItem(CUK);localStorage.removeItem(VK);if(timerIv){clearInterval(timerIv);timerIv=null;}if(suspIv){clearInterval(suspIv);suspIv=null;}toast("Logged out.","👋");showView("auth");}
